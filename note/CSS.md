@@ -61,6 +61,75 @@
 
 如 `display:inline-table`外在盒子就是inline，内在盒子就是table。外在盒子决定了元素要像内联元素一样并排在一排显示，内在盒子决定了元素可以设置宽高、垂直方向的margin等属性。
 
+## 6、css中可继承和不可继承属性
+
+### 不可继承属性
+
+1. `display`：规定元素生成框的类型
+2. **文本属性**
+   - `vertical-align`：垂直文本对齐
+   - `text-decoration`：规定添加到文本的装饰
+   - `text-shadow`：文本阴影效果
+   - `white-space`：空白符处理
+   - `Unicode-bidi`：设置文本的方向
+3. **盒子模型的属性**：`width`、`height`、`margin`、`border`、`padding`
+4. **背景属性**：`background-...`
+5. **定位属性**：`float、clear、position、top、right、bottom、left、min-width、overflow、clip、z-index`
+6. **生成内容属性**：`content、counter-reset、counter-increment`
+7. **轮廓样式属性**：`outline-style、outline-width、outline`
+8. **页面样式属性**：`size、page-break-before`
+9. **声音样式属性**：`pause-before、cue-after`
+
+### 可继承属性
+
+1. **字体系列属性**：`font-family、font-weight、font-size、font-style`
+2. **文本系列属性**：`text-indent、text-align、line-height、word-spacing、letter-spacing、text-transform、color`
+3. **元素可见性**：visibility
+4. **列表布局属性**：list-style、
+5. **光标属性**：cursor
+
+## 7、替换元素
+
+> 根据“外在盒子”是内联还是块级，我们把元素分为内联元素和块级元素，而根据内容是否可替换，我们把元素分为可替换元素和非替换元素。
+
+**替换元素**，是指内容可替换的元素。浏览器会根据元素的标签和属性，来决定元素的具体显示内容。其内容不受css视觉格式化模型控制，css渲染模型并不考虑对此内容的渲染，且元素本身一般拥有固定尺寸（宽高，宽高比）
+
+**例子**：
+
+1. **img**。浏览器会根据img元素的src属性加载图片信息并显示，如果进查看HTML代码，只能看到引用地址，而看不到图片的实际内容。
+2. 另外，`textarea、select、iframe、video`都是替换元素。这些元素往往没有实际的内容，即是一个空元素，有些元素仅在特点情况下被作为可替换元素处理，如：`option、audio、canvas、object`等
+
+**除了内容可替换外，还有以下特性**：
+
+- **内容的外观不受页面上的css的影响**。用专业的话说就是在样式表 现在css作用域之外。如何更改替换元素本身外观需要类似appearance属性，或者浏览器自身暴露的一些样式接口。
+- **有自己的尺寸**。在web中，很多替换元素在没有明确尺寸设定情况下，其默认的尺寸（不包括边框）是300*150像素
+- **在很多css属性上有自己的默认样式**。比如 `vertical-align`属性，默认值是 `baseline`，是基线的意思，但替换元素这个属性的默认值是 `bottom`，定义为元素的下边缘。
+- **所有替换元素都是内联水平元素**。也就是替换元素和替换元素、替换元素和替换文字都是可以在一行显示的。默认`display`的值是 `inline`或 `inline-block`。
+
+**替换元素的尺寸由内而外分为三类**：
+
+- **固有尺寸**：指的是替换内容原本的尺寸。例如，图片、视频作为一个独立文件存在的时候，都是有着自己的宽度和高度。
+- **HTML尺寸**：只能通过HTML原生属性改变，这些HTML原生属性包括width和height属性、size属性。、
+- **css尺寸**：特指可以通过css的width和和height或者max-width/max-width和 max-height/min-height设置尺寸，对应盒尺寸中的content box。
+
+**这三层结构的计算规则**：
+
+固有尺寸》HTML尺寸》css尺寸》300*150像素
+
+## 8、对css sprites的理解
+
+css sprites（精灵图），将一个页面涉及到的所有图片都包含到一张大图中去，然后利用css 的 `background-image`、 `background-repeat`、`background-position`属性的组合进行背景定位。也被称为 “雪碧图”
+
+适合用于导航的背景图、按钮小图标等。
+
+**优点**：通过整合图片，减少对服务器的请求数量，减少图片的体积从而减轻服务器的负担，提高网页的加载速度。
+
+
+
+
+
+
+
 # 二、css基础
 
 ## 1、CSS选择器和权重
@@ -196,6 +265,19 @@ p:first-child{color:red;}
 2. 将所有 `<li>`写在同一行。不足：代码不美观。
 3. 将 `<ul>`内的字符尺寸直接设为0，即 `font-size:0`。不足： `<ul>`中的其他字符尺寸也被设置为0，需要额外重新设定其他字符尺寸，且在Safari浏览器依然会出现空白间隔。
 4. 消除 `<ul>`的字符间隔`letter-spacing:-8px`。不足：这也设置了 `<li>`内的字符间隔。因此需要将 `<li>`内的字符间隔设为默认 `letter-spacing:normal`
+
+## 9、为什么有时候用translate来改变位置而不是定位？
+
+translate是transform属性的一个值。改变transform或opacity不会触发浏览器重新布局（回流reflow）或重绘（repaint），只会触发复合（compositions）。而改变**绝对定位会触发回流，进而触发重绘和复合**。
+
+transform使浏览器为元素创建一个GPU图层，但改变绝对定位会使用到CPU。因此translate更高效，可以缩短平滑动画的绘制时间。而**translate改变位置时，元素依然会占据其原始空间**，绝对定位不会发生这种情况。
+
+## 10、margin和padding的使用场景
+
+- 需要在border外侧添加空白，且空白处不需要背景（色）时，使用margin。（上下相连的两个盒子之间的空白，需要相互抵消时）
+- 需要在border内侧添加空白，且空白处需要背景（色）时，使用padding。（上下相连的两个盒子之间的空白，希望等于两者之和时）。
+
+## 11、对line-height的理解
 
 
 
