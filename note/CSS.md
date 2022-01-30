@@ -883,5 +883,555 @@ left {
 }
 ```
 
+## 5、对于flex布局的理解及其使用场景
 
+flex意味“弹性布局”，用来为盒状模型提供最大的灵活性。任何一个容器都可以指定为flex布局。行内元素也可以使用flex布局。
+
+**注意：设为flex布局以后，子元素的float、clear、和vertical-align属性将失效。**
+
+采用flex布局的元素，称为flex容器，简称“容器”。它的所有子元素自动成为容器成员，称为flex项目（flex item），简称“项目”。容器默认存在两根轴线：水平的主轴（main axis）和垂直的交叉轴（cross axis），项目默认沿水平主轴排列。
+
+以下六个属性设置在 **容器上**：
+
+- flex-direction属性决定主轴的方向（即项目的排列方向）。
+- flex-wrap属性定义，如果一条轴线排不下，如何换行。
+
+- flex-flow属性是flex-direction属性和flex-wrap属性的简写形式，默认值为row nowrap。
+- justify-content属性定义了项目在主轴上的对齐方式。
+
+- align-items属性定义项目在交叉轴上如何对齐。
+- align-content属性定义了多根轴线的对齐方式。如果项目只有一根轴线，该属性不起作用。
+
+以下6个属性设置在**项目上**：
+
+- order属性定义项目的排列顺序。数值越小，排列越靠前，默认为0。
+- flex-grow属性定义项目的放大比例，默认为0，即如果存在剩余空间，也不放大。
+
+- flex-shrink属性定义了项目的缩小比例，默认为1，即如果空间不足，该项目将缩小。
+- flex-basis属性定义了在分配多余空间之前，项目占据的主轴空间。浏览器根据这个属性，计算主轴是否有多余空间。它的默认值为auto，即项目的本来大小。
+
+- flex属性是flex-grow，flex-shrink和flex-basis的简写，默认值为0 1 auto。
+- align-self属性允许单个项目有与其他项目不一样的对齐方式，可覆盖align-items属性。默认值为auto，表示继承父元素的align-items属性，如果没有父元素，则等同于stretch。
+
+**简单来说：**
+
+flex布局是CSS3新增的一种布局方式，可以通过将一个元素的display属性值设置为flex从而使它成为一个flex容器，它的所有子元素都会成为它的项目。一个容器默认有两条轴：一个是水平的主轴，一个是与主轴垂直的交叉轴。可以使用flex-direction来指定主轴的方向。可以使用justify-content来指定元素在主轴上的排列方式，使用align-items来指定元素在交叉轴上的排列方式。还可以使用flex-wrap来规定当一行排列不下时的换行方式。对于容器中的项目，可以使用order属性来指定项目的排列顺序，还可以使用flex-grow来指定当排列空间有剩余的时候，项目的放大比例，还可以使用flex-shrink来指定当排列空间不足时，项目的缩小比例。
+
+## 6、用九宫格浅谈布局
+
+首先，定义好通用的HTML结构：
+
+```html
+<div class="box">
+  <ul>
+    <li>1</li>
+    <li>2</li>
+    <li>3</li>
+    <li>4</li>
+    <li>5</li>
+    <li>6</li>
+    <li>7</li>
+    <li>8</li>
+    <li>9</li>
+  </ul>
+</div>
+```
+
+公共样式：
+
+```css
+ul {
+	padding: 0;
+}
+
+li { 
+	list-style: none;
+  text-align: center;
+	border-radius: 5px;
+	background: skyblue;
+}
+```
+
+### （1）flex实现
+
+flex设置九宫格，需要设置一个`flex-wrap:wrap`；使得盒子在该换行的时候换行。
+
+由于给每个元素设置了下边距和右边距，所以最后同一列（3、6、9）的右边距和最后一行（7、8、9）的下边距撑大了ul，所以在这里使用类型选择器来消除他们的影响。
+
+```css
+ul {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  height: 100%;
+}
+
+li {
+  width: 30%;
+  height: 30%;
+  margin-right: 5%;
+  margin-bottom: 5%;
+}
+
+li:nth-of-type(3n){ 
+  margin-right: 0;
+}
+
+li:nth-of-type(n+7){ 
+  margin-bottom: 0;
+}
+```
+
+**优点**：简单，灵活，对移动端友好
+**缺点**：浏览器的兼容性不是很好，一些浏览器不是很支持
+
+### （2）grid布局
+
+其中grid-template-columns属性用来设置每一行中单个元素的宽度，grid-template-rows属性用来设置每一列中单个元素的高度，grid-gap属性用来设置盒子之间的间距。
+
+```css
+ul {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 30% 30% 30%; 
+  grid-template-rows: 30% 30% 30%; 
+  grid-gap: 5%; 
+}
+```
+
+**优点**：代码量简化比较多
+**缺点**：浏览器的兼容性不是很好，一些浏览器不是很支持
+
+### （3）float布局
+
+这里首先需要给父元素的div设置一个宽度，宽度值为：**盒子宽 \* 3 + 间距 \* 2；**然后给每个盒子设置固定的宽高，为了让他换行，可以使用float来实现，由于子元素的浮动，形成了BFC，所以父元素ul使用overflow:hidden；来消除浮动带来的影响。最终的实现代码如下：
+
+```css
+ul {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+li {
+  float: left;
+  width: 30%;
+  height: 30%;
+  margin-right: 5%;
+  margin-bottom: 5%;
+}
+
+li:nth-of-type(3n){ 
+  margin-right: 0;
+}
+
+li:nth-of-type(n+7){ 
+  margin-bottom: 0;
+}
+```
+
+**优点**：兼容性较好
+**缺点**：需要清除浮动，否则页面的布局会塌陷
+
+### （4）inline-block实现
+
+需要注意的是，设置为inline-block的元素之间可能会出现间隙，这里使用了letter-spacing属性来消除这种影响，该属性可以用来增加或减少字符间的空白（字符间距）。使用之后就正常了，出现了预期的效果。也可以给ul设置font-size: 0;来消除盒子之间的字符间距
+
+```css
+ul {
+  width: 100%;
+  height: 100%;
+  letter-spacing: -10px;
+  font-size:0;
+}
+
+li {
+  width: 30%;
+  height: 30%;
+  display: inline-block;
+  margin-right: 5%;
+  margin-bottom: 5%;
+}
+
+li:nth-of-type(3n){ 
+  margin-right: 0;
+}
+
+li:nth-of-type(n+7){ 
+  margin-bottom: 0;
+}
+```
+
+### （5）table布局
+
+HTML：
+
+```html
+<ul class="table">
+  <li>
+    <div>1</div>
+    <div>2</div>
+    <div>3</div>
+  </li>
+  <li>
+    <div>4</div>
+    <div>5</div>
+    <div>6</div>
+  </li>
+  <li>
+    <div>7</div>
+    <div>8</div>
+    <div>9</div>
+  </li>
+</ul>
+```
+
+table布局也不算太难，首先给父元素设置为table布局，然后使用border-spacing设置单元格之间的间距，最后将li设置为表格行，将div设置为表格单元格，CSS样式如下：
+
+```css
+.table {
+  width: 100%;
+  height: 100%;
+  display: table;
+  border-spacing: 10px;
+}
+
+li {
+  display: table-row; 
+}
+
+div {
+  width: 30%;
+  height: 30%;
+  display: table-cell;
+  text-align: center;
+  border-radius: 5px;
+  background: skyblue;
+}
+```
+
+table的特性决定了其适合用来做布局，并且表格中的内容可以自动居中
+
+1. 空间平均划分：子容器默认自动平分宽度的
+2. 设置了一个table-cell为固定的宽度之后，其余的自动平分占满父容器
+
+**优点**：兼容性好，布局相对简单，上手快
+**缺点**： 
+
+1. table占用了更多的字节，下载时间延迟，占用服务器更多的资源
+2. table会阻挡浏览器渲染引擎的顺序，页面生成速度延迟
+3. 灵活性比较差，不易更改
+4. 不利于搜索引擎抓取信息，影响网站的排名
+
+# 五、定位与浮动
+
+## 1、为什么要清除浮动？清除浮动的方式
+
+**浮动的定义**：非IE浏览器下，容器不设高度且子元素浮动时，容器高度不能被内容撑开。此时，内容会溢出到容器外面而影响布局。这种现象称为浮动（溢出）
+
+**浮动的工作原理**：
+
+- 浮动元素脱离文档流，不占据空间（引起高度塌陷现象）
+- 浮动元素碰到包含它的边框或者其他浮动元素的边框停留
+
+浮动元素可以左右移动，直到遇到另一个浮动元素或者遇到它外边缘的包含框。浮动框不属于文档流中的普通流，当元素浮动后，不会影响块级元素的布局，只会影响内联元素布局。此时文档流中的普通流就会表现得该浮动框不存在一样的布局模式。当包含框的高度小于浮动框时，就会出现“高度塌陷”。
+
+**浮动引起的问题**：
+
+- 父元素的高度无法撑开，影响与父元素同级的元素
+- 与浮动元素同级的非浮动元素会跟随其后
+- 若浮动的元素不是第一个元素，则该元素之前的元素也要浮动，否则会影响页面的显示结构
+
+### **清除浮动的方式**：
+
+<u>**（1）使用带clear属性的空元素**（额外标签法）</u>
+
+在浮动元素后使用一个空元素如 `<div class="clear"></div>` ，并在css中赋予 `.clear{clear:both}`属性即可清除浮动。
+
+<u>**（2）使用css的overflow属性**(bfc)（给父元素添加overflow属性）</u>
+
+- 给浮动元素的父级（包含容器）添加 `overflow:hidden`或者 `overflow:auto`属性。
+- 另外在IE6中还需要楚触发 `hasLayout` ,例如为父元素设置容器宽高或设置 `zoom:1`
+
+**（3）给浮动的元素的容器（父级）添加浮动**
+
+给浮动元素的容器也添加上浮动属性即可清除内部浮动，但是这样会使其整体浮动，影响布局，**不推荐使用**。
+
+**（4）使用邻接元素处理**
+
+什么都不做，给浮动元素后面的元素添加clear属性。
+
+<u>**（5）使用css的:after伪元素**（给父级元素添加after伪元素）</u>
+
+结合`:after` 伪元素（代表一个元素之后最近的元素）和IEhack，可以完美兼容当前主流的各大浏览器，这里的IEhack指的是触发hasLayout，给浮动元素的容器增加一个clearfix的class，然后给这个class添加一个:after伪元素实现元素末尾添加一个看不见的块元素来清理浮动。
+
+```css
+.clearfix:after{
+    content:"\200B";
+    display:table;
+    height:0;
+    clear:both;
+}
+.clearfix{
+    *zoom:1;
+}
+```
+
+**（6）给父级元素添加高度**
+
+## 2、使用clear属性清除浮动的原理
+
+使用clear清除浮动，其语法如下：
+
+```css
+clear:none|left|right|both;
+```
+
+如果单看字面意思，`clear:left`是“清除左浮动”， `clear:right`是清除右浮动，实际上，这种解释是有问题的，因为浮动一直还在，并没有清除。
+
+官方对clear的解释：“**元素盒子的边不能和<u>前面</u>的浮动元素相邻**”，对元素设置clear属性是为了避免浮动元素对该元素的影响，而不是清除浮动。
+
+还需要注意clear属性指的是元素盒子的边不能和前面的浮动元素相邻，注意这里 “**前面**”，也就是clear属性对“后面的”浮动元素是不闻不问的。考虑到float属性要么是left，要么是right，不可能同时存在，同时由于clear属性对“后面的”浮动元素不闻不问，因此，当 `clear:left`有效时， `clear:right`必定无效，也就是此时 `clear:left`等同与设置 `clear:both`。同样的， `clear:right`如果有效也是等同于设置 `clear:both`。由此可见，`clear:left`和`clear:right`这两个声明就没有任何使用的价值，至少在css世界中是如此，**直接使用clear:both**吧。
+
+一般用伪元素的方式清除浮动：
+
+```css
+.clear::after{
+    content:"";
+    display:block;
+    clear:both;
+}
+```
+
+clear属性只有块级元素才有效的，而 `::after`等伪元素默认都是内联水平，这就是借助伪元素清除浮动影响需要设置display属性值的原因。
+
+## 3、对BFC的理解，如何创建BFC
+
+**块级格式化上下文（block Formatting Context，BFC）**，是Web页面可视化css渲染的一部分，是布局过程中生成块级盒子的区域，规定了内部如何布局，并且这个区域的子元素不会影响到外面的元素，
+
+**通俗来讲**：BFC是一个独立的布局环境，可以理解为一个容器，在这个容器中按照一定的规则进行物品摆放，并且不会影响其他环境中的物品。如果一个元素符合触发BFC的条件，则BFC中的元素布局不受外部影响。
+
+**创建BFC的条件**：
+
+- 根元素：body
+- 元素设置浮动：float除none以外的值
+- 元素设置绝对定位：position（absolute，fixed）
+- display的值为：inline-block、table-cell、table-caption、flex、inline-flex等
+- overflow值为：hidden、auto、scroll的元素。（也就是值不为visible的元素）
+
+**BFC的特点**：
+
+1. 垂直方向上，自上而下排列，和文档流的排列方式一致。
+2. **在BFC中**上下相邻的两个容器的margin会重叠
+3. 计算BFC的高度时，需要计算浮动元素的高度
+4. BFC区域不会与浮动的容器发生重叠
+5. BFC是独立的容器，容器内部元素不会影响外部元素
+6. 每个元素的做margin值和容器的左border相接触
+
+**BFC的作用**：
+
+- **解决margin的重叠问题**：由于BFC是一个独立的区域，内部的元素和外部的元素互不影响，将两个元素变为BFC，就解决了margin重叠问题。
+- **解决高度塌陷的问题**：在对子元素设置浮动后，父元素会发生高度塌陷，也就是父元素的高度变为0。解决这个问题，只需要把父元素变成一个BFC。常用的办法是给父元素设置 `overflow:hidden`。
+- **创建自适应两栏布局**：可以用来床架自适应两栏布局：左边宽度固定，右边宽度自适应
+
+```css
+.left{
+    width:100px;
+    height:200px;
+    background:red;
+    float:left;
+}
+.right{
+    height:300px;
+    background:blue;
+    overflow:hidden;
+}
+```
+
+左侧设置`float:left`，右侧设置`overflow: hidden`。这样右边就触发了BFC，BFC的区域不会与浮动元素发生重叠，所以两侧就不会发生重叠，实现了自适应两栏布局。
+
+## 4. 什么是margin重叠问题？如何解决？
+
+**问题描述：**
+
+两个块级元素的上外边距和下外边距可能会合并（折叠）为一个外边距，其大小会取其中外边距值大的那个，这种行为就是外边距折叠。需要注意的是，**浮动的元素和绝对定位**这种脱离文档流的元素的外边距不会折叠。重叠只会出现在**垂直方向**。
+
+
+
+**计算原则：**
+
+折叠合并后外边距的计算原则如下：
+
+- 如果两者都是正数，那么就去最大者
+- 如果是一正一负，就会正值减去负值的绝对值
+
+- 两个都是负值时，用0减去两个中绝对值大的那个
+
+
+
+**解决办法：**
+
+对于折叠的情况，主要有两种：**兄弟之间重叠**和**父子之间重叠**
+
+（1）兄弟之间重叠
+
+- 底部元素变为行内盒子：`display: inline-block`
+- 底部元素设置浮动：`float`
+
+- 底部元素的position的值为`absolute/fixed`
+
+（2）父子之间重叠
+
+- 父元素加入：`overflow: hidden`
+- 父元素添加透明边框：`border:1px solid transparent`
+
+- 子元素变为行内盒子：`display: inline-block`
+- 子元素加入浮动属性或定位
+
+**总的来说就是**：
+
+1. 利用绝对定位，子绝父相
+2. 利用相对定位，相对于原来的位置
+3. 利用行内块元素
+4. 浮动
+5. 利用BFC
+6. 设置内边距或边框
+
+## 5、元素的层叠顺序
+
+层叠顺序，英文称作 stacking order，表示元素发生层叠时有着特定的垂直显示顺序。下面是盒模型的层叠规则：
+
+![image](https://gitee.com/guoluyan53/image-bed/raw/master/img/125327116-5a43be80-e375-11eb-8077-e75e07d63cf9.png)
+
+**注意:** 当定位元素z-index:auto，生成盒在当前层叠上下文中的层级为 0，不会建立新的层叠上下文，除非是根元素。
+
+## 6、position的属性有哪些，区别是什么
+
+position有以下属性值：
+
+| 属性值   | 概述                                                         |
+| -------- | ------------------------------------------------------------ |
+| absolute | 生成绝对定位的元素，相对于static定位以外的一个父元素进行定位。元素的位置通过left、top、right、bottom属性进行规定。 |
+| relative | 生成相对定位的元素，相对于其原来的位置进行定位。元素的位置通过left、top、right、bottom属性进行规定。 |
+| fixed    | 生成绝对定位的元素，指定元素相对于屏幕视⼝（viewport）的位置来指定元素位置。元素的位置在屏幕滚动时不会改变，⽐如回到顶部的按钮⼀般都是⽤此定位⽅式。 |
+| static   | 默认值，没有定位，元素出现在正常的文档流中，会忽略 top, bottom, left, right 或者 z-index 声明，块级元素从上往下纵向排布，⾏级元素从左向右排列。 |
+| inherit  | 规定从父元素继承position属性的值                             |
+
+前面三者的定位方式如下：
+
+- **relative：**元素的定位永远是相对于元素自身位置的，和其他元素没关系，也不会影响其他元素。
+
+- **fixed：**元素的定位是相对于 window （或者 iframe）边界的，和其他元素没有关系。但是它具有破坏性，会导致其他元素位置的变化。
+
+- **absolute：**元素的定位相对于前两者要复杂许多。如果为 absolute 设置了 top、left，浏览器会根据什么去确定它的纵向和横向的偏移量呢？答案是浏览器会递归查找该元素的所有父元素，如果找到一个设置了`position:relative/absolute/fixed`的元素，就以该元素为基准定位，如果没找到，就以浏览器边界定位。
+
+## 7. display、float、position的关系
+
+（1）首先判断display属性是否为none，如果为none，则position和float属性的值不影响元素最后的表现。
+
+（2）然后判断position的值是否为absolute或者fixed，如果是，则float属性失效，并且display的值应该被设置为table或者block，具体转换需要看初始转换值。
+
+（3）如果position的值不为absolute或者fixed，则判断float属性的值是否为none，如果不是，则display的值则按上面的规则转换。注意，如果position的值为relative并且float属性的值存在，则relative相对于浮动后的最终位置定位。
+
+（4）如果float的值为none，则判断元素是否为根元素，如果是根元素则display属性按照上面的规则转换，如果不是，则保持指定的display属性值不变。
+
+**总的来说，可以把它看作是一个类似优先级的机制，"position:absolute"和"position:fixed"优先级最高，有它存在的时候，浮动不起作用，'display'的值也需要调整；其次，元素的'float'特性的值不是"none"的时候或者它是根元素的时候，调整'display'的值；最后，非根元素，并且非浮动元素，并且非绝对定位的元素，'display'特性值同设置值。**
+
+## 8、对 sticky 定位的理解
+
+sticky 英文字面意思是粘贴，所以可以把它称之为粘性定位。语法：**position: sticky;** 基于用户的滚动位置来定位。
+
+粘性定位的元素是依赖于用户的滚动，在 **position:relative** 与 **position:fixed** 定位之间切换。它的行为就像 **position:relative;** 而当页面滚动超出目标区域时，它的表现就像 **position:fixed;**，它会固定在目标位置。元素定位表现为在跨越特定阈值前为相对定位，之后为固定定位。这个特定阈值指的是 top, right, bottom 或 left 之一，换言之，指定 top, right, bottom 或 left 四个阈值其中之一，才可使粘性定位生效。否则其行为与相对定位相同。
+
+## 9、 absolute与fixed共同点与不同点
+
+**共同点：**
+
+- 改变行内元素的呈现方式，将display置为inline-block 
+- 使元素脱离普通文档流，不再占据文档物理空间
+
+- 覆盖非定位文档元素
+
+**不同点：**
+
+- absolute与fixed的根元素不同，absolute的根元素可以设置，fixed根元素是浏览器。
+- 在有滚动条的页面中，absolute会跟着父元素进行移动，fixed固定在页面的具体位置。
+
+# 六、场景应用
+
+## 1、画一个三角形
+
+利用`border`属性来绘制三角形，实际上，border属性是由**三角形**组成的
+
+```css
+div {
+    width: 0;
+    height: 0;
+    border-bottom: 50px solid red;
+    border-right: 50px solid transparent;
+    border-left: 50px solid transparent;
+}
+```
+
+![img](https://gitee.com/guoluyan53/image-bed/raw/master/img/1603636245172-36f955bd-075b-442a-b88b-6c084c66ed25.png)
+
+## 2、实现一个扇形
+
+```css
+div{
+    border: 100px solid transparent;
+    width: 0;
+    height: 0;
+    border-radius: 100px;
+    border-top-color: red;
+}
+```
+
+![img](https://gitee.com/guoluyan53/image-bed/raw/master/img/1603636444767-26da7bbe-5479-44e2-9088-50c9211d6c0d.png)
+
+## 3、画一条0.5px的线
+
+- **采用transform:scale()的方式**，该方法用来定义元素的2D缩放转换：
+
+```css
+transform:scale(0.5,0.5);
+```
+
+- **采用meta viewport的方式**
+
+```css
+<meta name="viewpoint" content="width=device-width,initial-scale=0.5,minimum-scale=0.5,maximum-scale=0.5"/>
+```
+
+这样就能缩放到原来的0.5倍，如果是1px那么就会变成0.5px。viewport只针对于移动端，只在移动端上才能看到效果
+
+## 4、画一个梯形
+
+ ```css
+ .trapezoid {
+   height:0;
+   width:100px;
+   border-width:0 40px 100px 40px;
+   border-style:none solid solid;
+   border-color:transparent transparent red;
+ }
+ ```
+
+![image.png](https://gitee.com/guoluyan53/image-bed/raw/master/img/1630773825580-c1821c13-4513-4462-9a13-73ad4a3ef6e6.png)
+
+## 5、画一个半圆
+
+```css
+div {
+  background-color: red;
+  width: 100px;
+  height: 50px;
+  border-radius: 0px 0px 100px 100px;
+}
+```
+
+
+
+![image-20220130173147172](https://gitee.com/guoluyan53/image-bed/raw/master/img/image-20220130173147172.png)
 
