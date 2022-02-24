@@ -720,5 +720,251 @@ first();
 > - 全局上下文：变量定义，函数声明
 > - 函数上下文：变量定义，函数声明，this，arguments
 
+# 六、事件循环、微任务和宏任务
 
+> 事件循环（Event Loop），宏任务（macro-task），微任务（micro-task），执行栈和任务队列等。
+
+## 前言
+
+JavaScript是单线程的，同一时间只能做一件事。如果碰到某个耗时长的任务，那么后续的任务都要等待，这种效果是无法接受的，这时就引入了**异步任务**的概念。
+
+<u>所以JavaScript执行主要包括同步任务和异步任务</u>：
+
+**同步任务**：会放到执行栈中，他们是要按顺序执行的任务；
+
+**异步任务**：会放到任务队列中，这些异步任务一定要等到执行栈清空后才会执行，也就是说异步任务一定是在同步任务之后执行的。
+
+> JavaScript事件循环机制，主要和异步任务有关。
+
+## 任务队列
+
+事件循环主要和 任务队列有关，所以必须先知道宏任务和微任务。
+
+<u>**在任务队列中，有两种任务：宏任务和微任务。**</u>
+
+**宏任务**：script标签中的整体代码、setTimeout、setInterval、setImmediate、I/O、UI渲染等
+
+**微任务**：process.nextTick(Node.js)、Promise.then()、Object.observe(不常用)、MutationObserver（NodeJS）
+
+<u>**JS中用来存储执行回调函数的队列包含2个不同特定的队列**</u>
+
+**宏队列**：用来保存待执行的宏任务（回调），比如：定时器回调/DOM事件回调/ajax回调
+
+**微队列**：用来保存待执行的微任务（回调），比如：promise的回调/MutationsObserver的回调
+
+JS执行时会区别这2个队列
+
+1. JS引擎首先必须先执行所有的初始化同步任务代码
+2. 每次准备取出第一个宏任务执行前，都要将所有的微任务一个一个取出来执行
+
+> 执行的顺序是 同步代码》微任务》宏任务
+>
+> 微任务永远是先执行的，如果微任务中有宏任务，那么将这个宏任务放到宏队列中进行排队等待。
+
+## 事件循环
+
+- 一开始整个脚本（script标签中的整体代码）作为一个宏任务执行；
+- 执行过程中同步代码直接执行，宏任务进入宏队列，微任务进入微队列；
+- 当前宏任务执行完毕后，立即执行当前微任务队列中的所有微任务（依次执行）
+- 当前宏任务执行完毕，开始检查渲染，然后GUI线程接管渲染
+- 渲染完毕后，JS线程继续接管，开始下一个宏任务（从事件队列中获取）
+
+![img](https://gitee.com/guoluyan53/image-bed/raw/master/img/v2-e6dd78c74cb671dd9408c2273308a265_1440w.jpg)
+
+# 七、深拷贝和浅拷贝
+
+> 这里深浅拷贝针对的是**引用数据类型**。因为原始数据类型，从一个变量拷贝到另一个变量，只是很单纯的赋值过程，两者是不会有什么影响的。
+>
+> 而对于引用数据类型，从一个变量拷贝到另一个变量，本质是拷贝了对象的存储地址，两个变量最终都还是指向同一个对象。
+
+## 概念
+
+为什么存在 `浅拷贝`和 `深拷贝`？
+
+<u>“为了防止父对象数据被篡改”</u>。也就是不希望我拷贝完的对象修改后会影响到原来的对象。
+
+- 浅拷贝：复制引用的拷贝方法（可以解决一层，但是多层就不行了）
+- 深拷贝：完全拷贝一个对象。完成拷贝之后彼此之间操作绝对不会有互相影响的就是深拷贝。（可以解决多层）
+
+## 数组的浅拷贝和深拷贝
+
+### 浅拷贝
+
+- `Array.prototype.slice()`
+  - 运行slice得到的结果是一个对原数组的浅拷贝，原数组不会修改。所以如果修改两个数组中的任意一个，另一个都不会受影响
+- `Array.prototype.concat()`
+  - concat方法是用来合并数组的，它也不会更改原有的数组，而是返回一个新数组。
+- `ES6扩展语法...`
+- `Array.from()`
+
+> 上面这些方法对于**一层 深度** 且只是**普通的原始数据类型值**来说，确实不会改变原数组。但是如果是多层拷贝的化，就不行了：
+
+```javascript
+// 数组
+let arr = [1, 2, [1]];
+let newArr = arr.concat();
+newArr[2][0] = 10;
+console.log(arr, newArr); // [1, 2, [10]] [1, 2, [10]]
+
+let arr1 = [1, 2, [1]];
+let newArr1 = arr1.slice();
+newArr1[2][0] = 10;
+console.log(arr1, newArr1); // [1, 2, [10]] [1, 2, [10]]
+```
+
+这就需要深拷贝了：
+
+### 深拷贝
+
+数组深拷贝：`JSON.Parse()`，`JSON.stringify()`
+
+```javascript
+let arr = [1, 2, [1]];
+let newArr = JSON.parse(JSON.stringify(arr));
+newArr[2][0] = 10;
+console.log(arr, newArr); // [1, 2, [1]] [1, 2, [10]]
+```
+
+## 对象的浅拷贝和深拷贝
+
+### 浅拷贝
+
+- `Object.assign(target,...sources)`
+- 也可以通过扩展运算符 `...`来实现
+
+```javascript
+const person = {
+   name: 'Wes Bos',
+   age: 80
+ };
+const cap2 = Object.assign({}, person, { number: 99, age: 12 });
+console.log(cap2); // Object {name: "Wes Bos", age: 12, number: 99}
+```
+
+浅拷贝只解决了第一层的问题，如果接下去的值中还有对象的话，那么就又回到最开始的话题了，两者享有相同的地址。要解决这个问题，我们就得使用深拷贝了。
+
+### 深拷贝
+
+`JSON.Parse()`，`JSON.stringify()`
+
+**JSON对象中的stringify可以把一个js对象序列化为一个JSON字符串，parse可以把JSON字符串反序列化为一个对象。**
+
+```javascript
+const wes = {
+  name: 'Wes',
+  age: 100,
+  social: {
+    twitter: '@wesbos',
+    facebook: 'wesbos.developer'
+  }
+};
+
+const dev = Object.assign({}, wes);
+const dev2 = JSON.parse(JSON.stringify(wes));
+console.log(wes);
+console.log(dev);
+console.log(dev2);
+```
+
+不过 **这种方法也是有局限的**：
+
+- 会忽略 `undefined`
+- 会忽略 `symbol`
+- 不能序列化函数
+- 不能解决循环引用的对象
+
+loader中使用 deepclone可以解决
+
+# 八、防抖和节流
+
+## 防抖（debounce）
+
+> 多次点击只执行一次。
+>
+> 只执行最后一个被触发的，清除之前的异步任务，核心在于 `清零`
+
+所谓防抖，就是指触发事件后，把触发非常频繁的事件合并成一次去执行。即在指定时间内只执行一次回调函数，如果在指定的时间内又触发了该事件，则回调函数的执行时间会基于此刻重新开始计算。
+
+![img](https://gitee.com/guoluyan53/image-bed/raw/master/img/v2-3da3bad98e09d349d3cc8e4d19bf313a_1440w.jpg)
+
+**简单来说就是，执行一次函数后（给下一次执行设定一个延迟时间），如果再次触发，那么不会响应，而这个时间重新计时，直到在这个时间内没有触发事件才可以执行下一次函数。**
+
+```javascript
+const button = document.querySelector('input');
+
+function inputhhh(){
+    console.log('hhh');
+}
+
+//防抖函数
+//传入两个参数：要防抖的函数，要延迟的时间
+function debounce(func,delay){
+    let timer;
+    return function(){
+        let context = this;
+        let args = arguments;
+        clearTimeout(timer);
+        timer = setTimeout(function(){
+            func.apply(context,arguments);
+        },delay);
+    }
+}
+
+button.addEventListener('click',debounce(inputhhh,1000));
+```
+
+**要点**： `setTimeout` | `clearTimeout`
+
+## 节流（throttle）
+
+> 在固定时间段内只执行一次。
+>
+> 只在开始执行一次，未执行完成过程中触发的忽略，核心在于 `开关锁`
+
+所谓节流，是指频繁触发事件时，只会在指定的时间段内执行事件回调，即触发事件间隔大于等于指定的时间才会执行回调函数。
+
+![img](https://gitee.com/guoluyan53/image-bed/raw/master/img/v2-93ac81a3f600ec1f655c61ad9f74a8b8_1440w.jpg)
+
+**简单来说，就是当事件被触发时执行，但是在指定时间内不管触发多少次都不会执行，当指定时间结束，触发才会被执行。**
+
+**【使用定时器】**
+
+```javascript
+function throttle(func,delay){
+    let timer;
+    return function(){
+        let context = this;
+        let args = arguments;
+        if(timer){
+            return;
+        }
+        timer = setTimeout(function(){
+            func.apply(context,args);
+            timer = null;
+        },delay);
+    }
+}
+```
+
+**【使用Date()时间戳】**
+
+```javascript
+function throttle(func,delay){
+    let pre = 0;
+    return function(){
+        let now = new Date();
+        let context = this;
+        let args = arguments;
+        if(now - pre > delay){
+            func.apply(context,args);
+            pre = now;
+        }
+    }
+}
+```
+
+## 总结
+
+1. 防抖和节流只是减少了事件回调函数的执行次数，并不会减少事件的触发频率。
+2. 防抖和节流并没有从本质上解决性能问题，我们还应该注意优化我们事件回调函数的逻辑功能，避免在回调中执行比较复杂的DOM操作，减少浏览器回流和重绘。
 
