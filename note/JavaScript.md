@@ -968,3 +968,314 @@ function throttle(func,delay){
 1. 防抖和节流只是减少了事件回调函数的执行次数，并不会减少事件的触发频率。
 2. 防抖和节流并没有从本质上解决性能问题，我们还应该注意优化我们事件回调函数的逻辑功能，避免在回调中执行比较复杂的DOM操作，减少浏览器回流和重绘。
 
+# 九、this/call/apply/bind
+
+## 1. 对this的理解
+
+> this关键字是函数运行时自动生成的一个内部对象，只能在函数内部使用，总指向调用它的对象。
+
+**this是执行上下文中的一个属性，它指向最后一次调用这个方法的对象**。在实际开发中，this的指向可以通过四种调用模式来判断。
+
+1. **函数调用模式（默认绑定）**：当一个函数不是一个对象的属性时，直接作为函数来调用时，this指向全局对象。
+2. **方法调用模式（隐式绑定）**：如果一个函数作为一个对象的方法来调用时，this指向这个对象（这个函数如果被多级对象包含，尽管这个函数是被最外层的对象所调用，this的指向也只是它上一级对象）。[例子](https://vue3js.cn/interview/JavaScript/this.html)
+3. **构造器模式（new绑定）**：如果一个函数用new调用时，函数执行前会创建一个实例对象，this指向这个新创建的实例对象。
+4. **apply、call、bind调用模式（显示绑定）**：这三个方法都可以显示的指定调用函数的this指向。
+
+> 这四种调用的优先级：
+>
+> 构造器模式 》apply|call|bind 》方法调用模式》函数调用模式。
+
+## 2. apply、call、bind的理解
+
+### 作用
+
+call、apply、bind作用是改变函数执行时的上下文，简而言之就是改变函数运行时的`this`指向。
+
+### apply
+
+`apply`接受两个参数，第一个参数是 `this`指向，第二个参数是函数接收的参数，以 **数组**的形式传入。
+
+改变this指向后原函数会立即执行，且此方法只是**临时改变this指向一次**。
+
+```javascript
+function fn(...args){
+  console.log(this,args);
+}
+let obj = {
+  myname:"张三"
+}
+
+fn.apply(obj,[1,2]); // this会变成传入的obj，传入的参数必须是一个数组；
+fn(1,2) // this指向window
+```
+
+![image-20220225111723748](https://gitee.com/guoluyan53/image-bed/raw/master/img/image-20220225111723748.png)
+
+> 当第一个参数为 null、undefined的时候，默认指向window（在浏览器中）
+
+### call
+
+call方法的第一个参数是this的指向，后面传入的是一个参数列表
+
+跟 `apply`一样，改变this指向后原函数会立即执行，且此方法只是临时改变this指向一次。
+
+```javascript
+function fn(...args){
+    console.log(this,args);
+}
+let obj = {
+    myname:"张三"
+}
+
+fn.call(obj,1,2); // this会变成传入的obj，传入的参数是一个列表；
+fn(1,2) // this指向window
+```
+
+![image-20220225112120130](https://gitee.com/guoluyan53/image-bed/raw/master/img/image-20220225112120130.png)
+
+> 当第一个参数为 null、undefined的时候，默认指向window（在浏览器中）
+
+### bind
+
+bind和call很类似，第一个参数也是 this 指向，后面传入的也是一个参数列表（但是这个参数列表可以分多次传入）
+
+改变this指向后不会立即执行，而是返回一个永久改变 `this`指向的函数。
+
+```javascript
+function fn(...args){
+    console.log(this,args);
+}
+let obj = {
+    myname:"张三"
+}
+
+const bindFn = fn.bind(obj); // this 也会变成传入的obj ，bind不是立即执行,故需要执行一次
+bindFn(1,2) // this指向obj
+fn(1,2) // this指向window
+```
+
+### 总结
+
+- 三者都可以改变函数的 `this`对象指向
+- 三者第一个参数都是 `this`要指向的对象，如果没有这个参数或参数为 `undefined`或`null`，则默认指向全局 `window`
+- 三者都可以传参，但是 `apply`是数组，而 `call`是参数列表，且 `apply`和 `call`是一次性传入参数，而 `bind`可以分为多次传入
+- `bind`是返回绑定`this`之后的函数， `apply`、`call`则是立即执行
+
+## 3. 手撕call、apply、bind函数
+
+### （1）实现call
+
+1. 判断调用对象是否为函数，即使是定义在函数原型上的，**但是可能出现使用call等方式调用的情况**
+2. 判断传入上下文对象是否存在，如果不存在，设置为window
+3. 处理传入的参数，截取第一个参数后的所有参数
+4. 将函数作为上下文对象的一个属性
+5. 使用上下文对象来调用这个方法，并保存返回结果
+6. 删除刚才新增的属性
+7. 返回结果
+
+```javascript
+Function.prototype.myCall = function(context){
+    //判断调用对象
+    if(typeof this!=="function"){
+        console.log("type error");
+    }
+    //获取参数
+    let args = [...arguments].slice(1);
+    let result = null;
+    //判断context 是否传入。如果未传入则设置为window
+    context = context || window;
+    //将调用函数设为对象的方法
+    context.fn = this;
+    //调用函数
+    result = context.fn(...args);
+    //将属性删除
+    delete context.fn;
+    return result;
+};
+```
+
+### （2）实现apply
+
+1. 判断调用对象是否为函数，即使是定义在函数的原型上的，但是可能出现使用call等方式调用的情况。
+2. 判断传入上下文对象是否存在，如果不存在，则设置为window
+3. 将函数作为上下文对象的一个属性
+4. 判断参数值是否传入
+5. 使用上下文对象来调用这个方法，并保存返回结果
+6. 删除刚才新增的属性
+7. 返回结果
+
+```javascript
+Function.prototype.myApply = function(context){
+    if(typeof this!=="function"){
+        throw new TypeError("Error");
+    }
+    let result = null;
+    context = context || window;
+    context.fn = this;
+    if(arguments[1]){
+        result = context.fn(...arguments[1]);
+    }else{
+        result = context.fn();
+    }
+    delete context.fn;
+    return result;
+};
+```
+
+### （3）实现bind
+
+1. 判断调用对象是否为函数，即使是定义在函数的原型上的，但是可能出现使用call等方式调用的情况。
+2. 保存当前函数的引用，获取其传入的参数值
+3. 创建一个函数返回
+4. 函数内部使用apply来绑定函数调用，需要判断函数作为构造函数的情况，这个时候需要传入当前函数的this给apply调用，其余情况都传入指定的上下文对象。
+
+```javascript
+Function.prototype.myBind = function(context){
+    //判断调用对象是否为函数
+    if(typeof this!=="function"){
+        throw new TypeError("Error");
+    }
+    //获取参数
+    var args = [...arguments].slice(1);
+    fn = this;
+    return function Fn(){
+        //根据调用方式，传入不同绑定值
+        return fn.apply(
+        	this instanceof Fn ? this : context,args.concat(...arguments)
+        );
+    };
+};
+```
+
+# 十、异步编程
+
+## 1. 异步解决方案
+
+JavaScript中的异步机制可以分为以下几种：
+
+- **回调函数**的方式，使用回调函数当有多个回调函数嵌套的时候会造成回调地狱，上下两层的回调函数间的代码耦合度太高，不利于代码的可维护。
+- **Promise**的方式，使用Promise的方式可以将嵌套的回调函数作为链式调用。但是，有时会造成多个then的链式调用，可能会造成代码的语义不够明确。
+- **generator生成器**，它可以在函数的执行过程中，将函数的执行权转移出去，在函数外部还可以将执行权转移回来。当遇到异步函数执行的时候，将函数执行权转移出去，当异步函数执行完毕时再将执行权给转移回来。因此在generator内部对于异步操作的方式，可以以同步的顺序来书写。
+- **async函数**，async是generator和promise实现的一个自动执行的语法糖。它内部自带执行器，当函数内部执行得到一个await语句的时候，如果语句返回一个promise对象，那么函数将会等待promise对象的状态变为resolve后再继续向下执行。因此可以将异步逻辑，转化为同步的顺序来书写，并且这个函数可以自动执行。
+
+## 2. async/await（异步/等待）
+
+> async/await其实就是 generator的语法糖，他能实现的效果都能用then链来实现，它是为优化then链而开发出来的。
+>
+> async/await的用处就是：用同步的方式，执行异步操作。[理解](https://juejin.cn/post/7007031572238958629)
+
+- `async`是一个位于function之前的前缀，**只有在 `async函数`中，才能使用 `await`。**
+- 在 async函数中，`await`规定了异步操作只能一个一个排队执行，从而达到用同步的方式，执行异步的操作。
+
+​        也就是说，`async`函数返回一个Promise对象，当函数执行的时候，一旦遇到await就会先返回，等到触发的异步操作完成，再执行函数体后面的语句。可以理解为，是让出线程，跳出了async函数体。
+
+​        `await`的含义为等待，也就是async函数需要等待await后的函数执行完成并且有了返回结果（Promise对象）之后，才能继续执行下面的代码。await通过返回一个Promise对象来实现同步的效果。
+
+【一个栗子】
+
+```javascript
+function request(num){ //模拟接口请求
+    return new Promise(resolve=>{
+        setTimeout(()=>{
+            resolve(num*2)
+        },1000)
+    })
+}
+
+async function fn(){
+    await request(1);
+    await request(2);
+}
+fn()
+```
+
+【一个栗子】
+
+```javascript
+async function async1(){
+   console.log('async1 start');
+    await async2();
+    console.log('async1 end')
+}
+async function async2(){
+    console.log('async2')
+}
+console.log('script start');
+async1();
+console.log('script end')
+// 输出顺序：script start->async1 start->async2->script end->async1 end
+```
+
+【总结】
+
+- await只能在async函数中使用，不然会报错
+- async函数返回的是一个Promise对象，有无值看有无return值
+- await后面最好是接Promise，虽然接其他值也能达到排队的效果
+- async/await作用是 **用同步方式，执行异步操作**
+
+## 3. 生成器Generator
+
+[理解](https://juejin.cn/post/7007031572238958629)
+
+- `generator函数`跟普通函数在写法上的区别就是，多了一个星号 `*`
+- 在generator函数中才能使用 `yield`，相当于是函数指执行的 中途暂停点。
+- 使用 `next方法`继续执行，next方法执行后回返回一个对象，对象中有 `value和done`两个属性
+  - **value**：暂停点后面接的值，也就是yield后面接的值
+  - **done**：是否generator函数已经走完，没走完为false，走完为true
+
+```javascript
+function* gen() {
+  yield 1
+  yield 2
+  return 4
+}
+const g = gen()
+console.log(g.next()) // { value: 1, done: false }
+console.log(g.next()) // { value: 2, done: false }
+console.log(g.next()) // { value: 4, done: true }
+```
+
+最后一个value值是否为undefined取决于函数有无返回值。
+
+### 关于yield
+
+yield表达式就是用来 **划分generator函数的各个状态，他可以理解为函数暂停的标志**。
+
+当执行`next()`方法，遇到yield表达式时，就暂停后面的操作，并将 **yield表达式的值作为next方法返回的信息对象的value属性值**。
+
+下次调用next方法，继续执行yield表达式后面的操作。
+
+## 4. 回调函数
+
+[理解](https://zhuanlan.zhihu.com/p/87457553)
+
+**什么是回调函数？**
+
+按照MDN：回调函数是作为参数传递给另一个函数的函数，然后在外部函数内部调用该回调函数以完成某种例程或操作。
+
+简单来说，回调函数是一个函数，将在另一个函数完成执行后立即执行。回调函数是一个作为参数传递给另一个JavaScript函数的函数。该回调函数在传递给它的函数内部执行。
+
+**为什么需要回调？**
+
+防止在单线程中执行某任务时间较长，而造成线程阻塞。
+
+```javascript
+ajax(url,()=>{
+    //处理逻辑
+})
+```
+
+回调地狱
+
+```javascript
+ajax(url, () => {
+    // 处理逻辑
+    ajax(url1, () => {
+        // 处理逻辑
+        ajax(url2, () => {
+            // 处理逻辑
+        })
+    })
+})
+```
+
