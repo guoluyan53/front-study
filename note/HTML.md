@@ -2,11 +2,28 @@
 
 # 1、HTML5的新增特性
 
-- 语义化标签：`header`、`nav`、`footer`、`section`、`aside`、`article`、`details`、`summary`、`dialog`（对话框）
-- 媒体标签：`audio`、`video`
-- canvas绘图
-- web存储：`localStorage`、`sessionStorage`
-- 表单
+- **语义化标签**：`header`、`nav`、`footer`、`section`、`aside`、`article`、`details`、`summary`、`dialog`（对话框）
+
+- **媒体标签**：`audio`、`video`
+
+- **canvas绘图**
+
+- **拖放**：即抓取对象以后拖到另一个位置。设置元素可拖放。
+
+  - `<img draggable="true"/>`
+
+- **DOM查询操作**
+
+  - document.querySelector()
+
+  - document.querySelectorAll()
+
+    他们选择的对象可以是标签，可以是类（需要加点），可以是ID（需要加#）
+
+- **web存储**：`localStorage`、`sessionStorage`
+
+- **表单**
+  
   - **input输入类型增多**。color(颜色选取)、date、datetime（UTC时间）、datetime-local（日期时间无时区）、email、month、number、range（一定范围内数字值）、search、tel（电话号码，这样就不用做正则了）、time、url、week
   - **新增表单元素**。datalist（输入域选项列表）、Keygen（验证用户）                                               、output（不同类型输出）
   - **新增表单属性**。placehoder（提示语）、required（Boolean，不能为空）、pattern（正则）。min/max、step（合法数字间隔）、height/width（image高宽）、autofocus（Boolean，自动获取焦点）、mutiple（Boolean，多选）

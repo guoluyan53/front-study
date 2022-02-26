@@ -1213,7 +1213,35 @@ console.log('script end')
 - await后面最好是接Promise，虽然接其他值也能达到排队的效果
 - async/await作用是 **用同步方式，执行异步操作**
 
+### async/await如何捕获异常
+
+```javascript
+async function fn(){
+	try{
+        let a = await Promise.reject('error')
+    }catch(error){
+        console.log(error)
+    }
+}
+```
+
 ## 3. 生成器Generator
+
+> 是ES6里面的知识。
+
+### 迭代器Iterator
+
+Iterator是一种接口，它为不同的数据结构提供统一的访问机制。任何数据结构只要部署了Iterator接口，就可以完成遍历操作。
+
+Iterator可以认为是一个 **指针** 对象，提供 `next()`对数据结构进行遍历，每次调用 `next()`方法，指针就指向数组的下一个成员并返回数据结构的当前成员的信息。该信息是一个对象，包含 `value`和 `done`两个属性。其中，value属性是当前成员的值，done属性是一个布尔值，表示遍历是否结束。
+
+**Iterator接口部署在数据结构的Symbol.iterator属性**
+
+可迭代的数据结构：String、Array、Map、Set、类数组、DOM（Nodelist对象）
+
+目的就是为了迭代有序的数据结构，方便访问和使用 **for...of**
+
+
 
 [理解](https://juejin.cn/post/7007031572238958629)
 
@@ -1278,4 +1306,239 @@ ajax(url, () => {
     })
 })
 ```
+
+## 5. Promise
+
+[promise解析](https://sandystar.xyz/2021/11/16/JavaScript/%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8BPromise/)
+
+### 什么是promise
+
+Promise是异步编程的一种解决方案，它是一个对象，可以获取异步操作的消息。
+
+所谓Promise，简单来说就是一个容器，里面保存着某个未来才会结束的事件（通常是一个异步操作）的结果。
+
+- 从语法上说，Promise是一个构造函数
+- 从功能上说：Promise是对象用来封装一个异步操作并可以获取其成功/失败的结果值。
+
+> - promise简单理解就是回调
+> - 成功回调一个函数，失败也回调一个函数，然后我们就可以在成功或失败里面写入一些代码去执行一些想要做的事。
+
+### Promise的三个状态
+
+- Pending （进行中/未决定的）
+- Resolved | fullfilled（已完成/成功）
+- Rejected （已拒绝/失败）
+
+**promise只有两种状态，初始状态是pending，且一个promise对象只能改变一次**。无论结果是成功还是失败，都会有一个**结果数据**，成功的结果一般称为 value，失败的结果数据一般称为 reason。
+
+【promise使用的一个小例子】
+
+```javascript
+const p = new Promise((resolve,reject)=>{
+    setTimeout(()=>{
+        if(n <= 30){
+            resolve(n); 
+        }else{
+            reject(n);  //n传参
+        }
+     },1000);
+});
+//调用then方法
+//第一个回调函数是成功的回调，第二个回调是失败的回调
+//value 值； reason 理由
+p.then((value)=> {  //成功resolve的执行函数
+      alert("中奖了");
+},(reason)=>{
+      alert("没中奖失败了");
+});
+});
+```
+
+> 在使用promise时，构造函数内部的代码是立即执行的。
+
+### Promise常用API
+
+**① Promise.prototype.then()** 
+
+指定用于得到成功value的成功回调和用于得到失败reason的失败回调**返回一个新的Promise对象**。第一个参数是resolved状态的回调函数，第二个参数是rejected状态的回调函数。
+
+**② Promise.prototype.catch()**
+
+用于指定发生错误时的回调函数
+
+**catch与then的第二个参数的区别是如果在then的第一个函数里抛出了异常，后面的catch能捕获到，而第二个函数捕获不到**。
+
+**③ Promise.resolve()**
+
+返回一个成功或失败的promise对象。
+
+-  如果传入的参数为 非promise对象，则返回的结果为成功的promise对象
+- 如果传入的参数为 Promise对象 ，则参数的结果决定了resolve 的结果
+
+**④ Promise.reject()**
+
+不管传入什么都会返回失败。
+
+**⑤ Promise.all()**
+
+多个promise任务并行执行
+
+如果全部成功执行，则以数组的方式返回所有的Promise任务的执行结果。
+
+如果有一个Promise任务是Rejected，则只返回rejected任务的结果。
+
+**⑥ Promise.race()**
+
+多个Promise任务并行执行。返回最先执行结束的Promise任务的结果，不管这个Promise结果是成功还是失败。
+
+### Promise的缺点
+
+- 无法取消，一旦新建就会立即执行
+- 如果不设置回调函数，Promise内部抛出的错误，不会反应到外部。
+- 当处于pending状态时，无法得知目前进展到哪一个阶段（刚刚开始还是即将完成）。
+
+# 十一、面向对象
+
+[面向对象理解](https://sandystar.xyz/2021/10/03/JavaScript/%E7%BA%A2%E5%AE%9D%E4%B9%A6/JS%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E7%9A%84%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1/)
+
+## 1. 对象创建的方式有哪些？
+
+一般使用字面量的形式直接创建对象，但是这种创建方式对于创建大量相似对象时，会产生大量的重复代码。但JS和一般的面向对象的语言不用，在ES6之前它没有类的概念。但是可以使用函数来进行模拟，从未产生出可复用的对象创建方式，常见的：
+
+### **① 工厂模式**
+
+主要的工作原理是用函数来封装创建对象的细节，从而通过调用函数来达到复用的目的。但是它有一个很大的问题就是创建出来的对象无法和某个类型联系起来，**它只是简单的封装了复用代码，而没有建立起对象和类型间的关系。**
+
+```javascript
+function createPerson(name,age,job){
+    var o = new Object;
+    o.name = name;
+    o.age = age;
+    o.job = job;
+    o.sayName = function(){
+        alert(this.name);
+    };
+    return o;
+}
+var person1 = createPerson("jasonzhang",18,"singer");
+var person2 = createPerson("yutongzhou",18,"actor");
+```
+
+### ② 构造函数模式
+
+JS中每一个函数都可以作为构造函数，只要一个函数通过`new`来调用的，那么就可以把它称为构造函数。**执行构造函数首先会创建一个实例对象，然后对象的原型指向构造函数的prototype属性，然后将执行上下文中的this指向这个实例对象，然后再执行整个函数，如果返回值不是对象，则返回新建的对象。**因为this的值指向了新建的对象，因此可以使用this给对象赋值。
+
+构造函数模式相对于工厂模式的**优点**是，所创建的对象和构造函数建立起了联系，因此可以通过原型来识别对象的类型。但是存在一个 **缺点**：造成了不必要的函数对象的创建，因为在js中函数也是一个对象，因此如果对象属性中如果包含函数的话，那么每次新建一个函数对象，浪费了不必要的内存空间，因为函数是所有的实例都可以通用的。
+
+```javascript
+function Person(name,age,job){
+    this.name = name;
+    this.age = age;
+    this.job = job;
+    this.sayName = function(){
+        alert(this.name);
+    };
+}
+var person1 = new Person("jasonzhang",18,"singer");
+var person2 = new Person("yutongzhou",18,"actor");
+```
+
+
+
+### ③ 原型模式
+
+因为每一个函数都有一个prototype属性，这个属性是一个对象，它包含了通过构造函数创建的所有实例都能共享的属性和方法。因此可以使用原型对象来添加公用属性和方法，从而实现代码的复用。这种方式相对于构造函数模式来说，解决了函数对象的复用问题。
+
+但是这个模式也存在一些问题，一个是没有办法通过出传入参数来初始化值，另一个是如果存在一个引用类型如Array这样的值，那么所有的实例将共享一个对象，一个实例对引用类型值的改变会影响所有的实例。
+
+```javascript
+function Person(){}
+Person.prototype.name = "jasonzhang";
+Person.prototype.age = 18;
+Person.prototype.job = "singer";
+Person.prototype.sayName = function(){
+    alert(this.name);
+};
+var person1 = new Person();
+person1.sayName();   //"jasonzhang"
+var person2 = new Person();
+person2.sayName();   //"jasonzhang"
+```
+
+### ④ 组合使用构造函数模式和原型模式
+
+这是创建自定义类型最常见的方式。因为构造函数模式和原型模式分开使用都存在一些问题，因此可以组合使用这两种模式，**通过构造函数来初始化对象的属性，通过原型对象来实现函数方法的复用**。
+
+这种方法很好的解决了两种模式单独使用时的缺点，但是有一点不足的就是，因为使用了两种不同的模式，所以对于代码的封装性不够好。
+
+```javascript
+function Person(name,age,job){
+    this.name = name;
+    this.age = age;
+    this.job = job;
+    this.friends = ["sandy","gally"];
+}
+Person.prototype = {
+    constructor : Person,
+    sayName : function(){
+        alert(this.name);
+    }
+}
+
+var person1 = new Person("jasonzhang",20,"singer");
+var person2 = new Person("mary",13,"student");
+```
+
+### ⑤ 动态原型模式
+
+把所有信息都封装在了构造函数中，而通过在构造函数中初始化原型（仅在必要的情况下），又保持了同时使用构造函数和原型的优点。简单的说，就是可以通过检查某个应该存在的方法是否有效，来决定是否需要初始化原型。
+
+```javascript
+function Person(name,age,job){
+    //属性
+    this.name = name;
+    this.age = age;
+    this.job = job;
+    //方法
+    if(typeof this.sayName != "function"){
+        Person.prototype.sayName = function(){
+            alert(this.name);
+        };
+    }
+}
+var friend = new Person("jason",20,"singer");
+friend.sayName();
+```
+
+### ⑥ 寄生构造函数模式
+
+这一模式和工厂模式的实现基本相同，它主要是基于一个已有的类型，在实例化时对实例化的对象进行扩展。这样既不用修改原来的构造函数，也达到了扩展对象的目的。他的缺点和工厂模式一样，无法实现对象的识别。
+
+## 2. 对象的继承方法
+
+> 原型链作为实现继承的主要方法。
+
+【**继承的基本思想**】：利用原型让一个引用类型继承另一个引用类型的属性和方法。
+
+【**原型链的基本概念**】：假如让原型对象等于另一个类型的实例，此时的原型对象将会包含一个指向另一个原型的指针，相应的，另一个原型中也包含着一个指向另一个构造函数的指针。假如另一个原型又是另一个类型的实例，那么上述关系依然成立，如此层层递进，就构成了实例与原型的链条。
+
+### ① 原型链的方式
+
+这个方式存在的缺点是，在包含有引用类型的数据时，会被所有的实例对象所共享，容易造成修改混乱。海慧寺就是在创建子类型的时候不能向超类型传递参数。
+
+### ② 借用构造函数的方式
+
+这种方式是用过在子类型的函数中调用超类型的构造函数来实现的，这一种方法解决了不能向超类型传递参数的缺点，但是它存在一个问题就是无法实现函数方法的复用，并且超类型原型定义的方法子类型也没有方法访问到。
+
+### ③ 组合继承
+
+组合继承是将原型链和借用构造函数组合起来使用的一种方式。通过借用构造函数的方式来实现类型的属性的继承，通过将子类型的原型设置为超类型的实例来实现方法的继承。这种方式解决了上面的两种模式单独使用时的问题，但是由于我们是以超类型的实例来作为子类型的原型，所以调用了两次超类的构造函数，造成了子类型的原型中多了很多不必要的属性。
+
+### ④ 原型式继承
+
+型式继承的主要思路就是基于已有的对象来创建新的对象，实现的原理是，向函数中传入一个对象，然后返回一个以这个对象为原型的对象。这种继承的思路主要不是为了实现创造一种新的类型，只是对某个对象实现一种简单继承，ES5 中定义的 Object.create() 方法就是原型式继承的实现。缺点与原型链方式相同。
+
+### ⑤ 寄生式继承
+
+### ⑥ 寄生式组合继承
 
