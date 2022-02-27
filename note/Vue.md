@@ -56,6 +56,22 @@ vue.js是采用 **数据劫持**结合 **发布者-订阅者模式**的方式，
 
 ![img](https://gitee.com/guoluyan53/image-bed/raw/master/img/1618656573096-ebdc520c-5d60-4d12-ad04-5df4ebbb5fe7.png)
 
+## 4. $nextTick原理及作用
+
+> Vue的nextTick其本质是对JavaScript执行原理EventLoop（事件循环）的一种应用。
+
+​		nextTick的核心是利用了如promise、MutationObserver、setImmediate、setTimeout的原生JavaScript方法来模拟应对的微/宏任务的实现，本质是为了利用JavaScript的这些异步回调任务队列来实现Vue框架中自己的异步回调队列。
+
+​		**nextTick不仅是vue内部的异步队列的调用方法**，同时也允许开发者在实际项目中使用这个方法来满足实际应用中**对DOM更新数据时机的后续处理**。
+
+### 原理
+
+1. vue用异步队列的方式来控制DOM更新和nextTick回调后执行。
+2. 微任务因为以高优先级特性，能确保队列中微任务在一次事件循环前被执行完毕。
+3. 考虑兼容问题，vue做了微任务向宏任务的降级方案。
+
+
+
 # 三、Vue区别篇
 
 ## 1. MVVM、MVC、MVP的区别
@@ -116,7 +132,77 @@ MVP通过使用Presenter来实现对View层和Model层的解耦。MVC中的Contr
 - 当需要进行数值计算，并且依赖与其他数据时，应该使用 `computed`，因为可以利用computed的缓存特性，避免每次获取值时都要重新计算。
 -  当需要在数据变化时执行异步或开销较大的操作时，应该使用watch，使用watch选项允许执行异步操作（访问一个API），限制执行该操作的频率，并在得到最终结果前，设置中间状态。这都是计算属性无法做到的。
 
+## 4. created 和 mounted 的区别
+
+- **created**：在模板渲染成html前调用，即通常初始化某些属性值，然后再渲染成视图。
+- **mounted**：在模板渲染成html后调用，通常是初始化页面完成后，再对html的DOM节点进行一些需要的操作。
+
+
+
 # 四、Vue生命周期
+
+![无标题](https://gitee.com/guoluyan53/image-bed/raw/master/img/无标题.png)
+
+## 1. 说一下Vue的生命周期
+
+Vue实例有一个完整的生命周期，也就是从开始创建、初始化数据、编译模板、挂载DOM -> 渲染、更新 -> 渲染、卸载等以系列过程，称这为vue的生命周期。
+
+> 注：在这个过程中也会运行一些叫做**生命周期钩子**的函数，这给用户在不同阶段添加自己代码的机会。以下这些就是钩子函数：
+
+1. **beforeCreate（创建前）**：数据观测和初始化事件还没开始，此时data的响应式追踪、event/watcher都还没有被设置，也就是说不能访问到data、computed、watch、methods上的方法和数据。
+2. **created（创建后）**：实例创建完成，实例上配置的options包括 data、methods、computed、watch等都配置完成，但是此时渲染节点还未挂载到DOM，所以不能访问到 `$el`属性。
+3. **beforeMounted（挂载前）**：在挂载开始之前被调用，相关的render函数首次被调用。实例已完成以下的配置：编译模板、把data里面的数据和模板生成HTML。此时还没有挂载到页面上。
+4. **mounted（挂载后）**：在el 被新创建的 vm.$el替换，并挂载到实例上去之后调用。实例已经完成以下的配置：用上面编译好的HTML内容替换el属性指向的DOM对象。完成模板中的html渲染到html页面中。此过程中进行ajax交互。
+5. **beforeUpdate（更新前）**：响应式数据更新时调用，此时虽然响应式数据更新了，但是对应的真实DOM还没有被渲染。
+6. **updated（更新后）**：由于数据更改导致的虚拟DOM重新渲染和打补丁之后调用。此时DOM已经根据响应式数据的变化更新了。调用时，组件DOM已经更新，所以可以执行依赖于DOM的操作。然而在大多数情况下，应该避免在此期间更改状态，因为这可能会导致更新无限循环。该钩子函数在服务器端渲染期间不被调用。
+7. **beforeDestroy（销毁前）**：实例销毁之前调用。这一步，实例仍然完全可以使用， `this`仍能获取到实例。
+8. **destroy（销毁后）**：实例销毁后调用，调用后，Vue实例指示的所有东西都会解绑定，所有的事件监听都会被移除，所有的子实例也会被销毁。该钩子函数在服务端渲染期间不被调用。
+
+## 2. Vue子组件和父组件执行顺序
+
+**加载渲染过程**：
+
+1. 父组件 beforeCreate
+2. 父组件 created
+3. 父组件 beforeMount
+4. 子组件 beforeCreate
+5. 子组件 created
+6. 子组件 beforeMount
+7. 子组件 mounted
+8. 父组件 mounted
+
+**更新过程**：
+
+1. 父组件 beforeUpdate
+2. 子组件 beforeUpdate
+3. 子组件 updated
+4. 父组件 updated
+
+**销毁过程**：
+
+- 父组件 beforeDestroy
+- 子组件 beforeDestroy
+- 子组件 destroyed
+- 父组件 destroyed
+
+## 3. 一般在哪个生命周期请求异步数据
+
+我们可以在钩子函数 created、beforeMounted、Mounted中进行调用，因为在这三个钩子函数中，data已经创建，可以将服务端返回的数据进行赋值。
+
+推荐在created钩子函数中调用异步请求，因为在created钩子函数中调用异步请求有以下优点：
+
+- 能更快获取到服务端的数据，减少页面加载时间，用户体验更好。
+- SSR不支持 beforeMounted、mounted钩子函数，放在created中有助于一致性。
+
+## 4. keep-alive中的生命周期有哪些
+
+> 如果需要在组件切换的时候，保存一些组件的状态防止多次渲染，就可以使用keep-alive组件包裹需要保存的组件。
+
+**keep-alive**是Vue提供的一个内置组件，用来对组件进行缓存------在组件切换过程中将状态保留在内存中，防止重复污染DOM。
+
+如果一个组件包裹了keep-alive，那么它会多出两个生命周期：deactivated、activated。同时，beforeDestroy 和 destroy就不会再被触发了，因为组件不会被真正的销毁。
+
+当组件被换掉时，会被缓存到内存中，触发deactivated 生命周期；当组件被切换回来时，再去缓存里找这个组件、触发activated钩子函数。
 
 # 五、组件通信
 
