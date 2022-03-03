@@ -2,7 +2,7 @@
 
 # 一、Vue基础
 
-## 4. data为什么是一个函数而不是对象？
+## 1. data为什么是一个函数而不是对象？
 
 > 简单来说就是，因为组件是可以复用的，JS里对象是引用关系，如果组件data是一个对象，那么子组件中的data属性值会互相污染，产生副作用。
 >
@@ -14,11 +14,135 @@ Vue组件可能存在多个实例，如果使用对象形式定义data，则会�
 
 采用函数形式定义，在initData时会将其作为工厂函数返回全新data对象，有效**规避多实例之间状态污染问题**。而在Vue根实例创建过程中则不存在该限制，也是因为根实例只能有一个，不需要担心这种情况。
 
-## 7. 为什么vue3.0使用proxy，抛弃了object.defineProperty?
+## 2. 为什么vue3.0使用proxy，抛弃了object.defineProperty?
 
 `Object.defineProperty`只能劫持对象的属性，因此我们需要对每个对象的每个属性进行遍历。vue2.X里，是通过 递归+遍历 data对象来实现对数据的监控的，如果属性值也是对象那么需要深度遍历，显然如果能劫持一个完整的对象才是更好的选择。
 
 Proxy可以劫持整个对象，并返回一个新的对象。Proxy不仅可以代理对象，还可以代理数组。还可以代理动态增加的属性。
+
+## 3. 对SSR的理解
+
+SSR也就是服务端渲染，也就是将Vue在客户端把标签渲染成HTML的工作放在服务端完成，然后再把html直接返回给客户端。
+
+**SSR的优势**：
+
+- 更好的SEO
+- 首屏加载速度更快
+
+**SSR的缺点**：
+
+- 开发条件会受到限制，服务端渲染只支持beforeCreate 个 created 两个钩子
+- 当需要一些外部扩展库时需要特殊处理，服务端渲染应用程序也需要处于Node.js的运行环境
+- 更多的服务端负载
+
+## 4. Vue如何监听对象或者数组某个属性的变化
+
+当在项目中直接设置数组的某一项的值，或者直接设置对象的某个属性值，这个时候，你会发现页面并没有更新。这是因为 Object.defineProperty()限制，监听不到变化。
+
+解决方式：
+
+**this.$set（要改变的数组/对象，要改变的位置/key，要改成什么value）**
+
+```javascript
+this.$set(this.arr,0,'hhh');  //改变数组
+this.$set(this.obj,'c','fsdf');  //改变对象
+```
+
+**调用一下几个数组的方法**：
+
+```javascript
+splice()、 push()、pop()、shift()、unshift()、sort()、reverse()
+```
+
+vue源码里缓存了array的原型链，然后重写了这几个方法，触发这几个方法的时候会observer数据，意思是使用这些方法不用再进行额外的操作，视图自动进行更新。推荐使用splice方法会比较好自定义，因为splice可以在数组的任何位置进行删除/添加操作。
+
+`vm.$set`的实现原理是：
+
+- 如果目标是数组，直接使用数组的splice方法触发响应式。
+- 如果目标是对象，会先判断属性是否存在、对象是否是响应式，最终如果要对属性进行响应式处理，则是通过调用defineReactive 方法进行响应式处理（defineReactive方法就是Vue在初始化对象时，给对象属性采用 Object.defineProperty动态添加getter和setter的功能所调用的方法）
+
+## 5. 什么是mixin？
+
+- Mixin使我们能够为Vue组件编写可插拔和可重用的功能。
+- 如果希望在多个组件之间重用一组组件选项，例如生命周期hook、方法等，则可以将其编写为mixin，并在组件中简单的引用它。
+- 然后将mixin的内容合并到组件中。如果你要在mixin中定义生命周期hook，那么它在执行时将优化组件自己的hook。
+
+## 6. 对vue组件化的理解
+
+1. 组件时独立和可复用的代码组织单元。组件系统是Vue核心特性之一，它使开发者使用小型、独立和通常可复用的组件构建大型应用
+2. 组件化开发能大幅提高应用开发效率、测试性、复用性等
+3. 组件使用按分类由：页面组件、业务组件、通用组件
+4. vue的组件时基于配置的，我们通常编写的组件是组件配置而非组件，框架后续会生成其他构造函数，他们基于VueComponent，扩展于Vue
+5. Vue中常见组件化技术有：属性prop,自定义事件，插槽等，他们主要用于组件通信、扩展等
+6. 合理的划分组件，有助于提升应用性能
+7. 组件应该是高内聚、低耦合的
+8. 遵循单向数据流的原则
+
+## 7. Vue的性能优化有哪些？
+
+**（1）编码阶段**
+
+- 尽量减少data中的数据，data中的数据会增加getter和setter，会收集对应的watcher
+- v-if和v-for不能连用
+- 如果需要使用v-for给每项元素绑定事件时使用事件代理
+- SPA页面采用keep-alive缓存组件
+- 在更多情况下，使用v-if替代v-show
+- key保证唯一
+- 使用路由懒加载、异步组件
+- 防抖、节流
+- 第三方模块按需导入
+- 长列表滚动到可视区域动态加载
+- 图片懒加载
+
+**（2）SEO**优化
+
+- 预渲染
+- 服务端渲染SSR
+
+**（3）打包优化**
+
+- 压缩代码
+- Tree Shaking/Scope Hoisting
+- 使用cdn加载第三方模块
+- 多线程打包happypack
+- sourceMap优化
+
+**（4）用户体验**
+
+- 骨架屏
+- PWA
+- 还可以使用缓存（客户端缓存、服务端缓存）优化、服务单开启gzip压缩等
+
+## 8. v-model的实现原理
+
+vue中 v-model 可以实现数据的双向绑定，但是为什么这个指令就可以实现数据的双向绑定呢？其实 v-model是vue的一个语法糖。即利用v-model绑定数据后，又添加了一个input事件监听。
+
+实现原理：
+
+- v-bind 绑定响应数据
+- 触发input事件并传递数据
+
+实例：
+
+```html
+<input v-model="text"></input>
+//等价于
+<input :value="text" @input="text = $event.target.value"></input>
+//组件中使用：
+<custom-input :value="text" @input="$event"></custom-input>
+// 根据v-model原理模拟：
+<input type="text" id="ipt1">
+<input type="text" id="ipt2">
+<script>
+    var ipt1=document.getElementById('ipt1');
+    var ipt2=document.getElementById('ipt2');
+    ipt1.addEventListener("input",function(){
+        ipt2.value=ipt1.value;
+    })
+</script>
+```
+
+
 
 # 二、Vue原理篇
 
@@ -77,6 +201,8 @@ vue.js是采用 **数据劫持**结合 **发布者-订阅者模式**的方式，
 > defineProperty ---->  定义属性，接收三个参数（要增加的对象，要增加的属性，描述对象），即
 >
 > `Object.defineproperty(obj, prop , descriptor)`，默认返回的是obj。
+>
+> 劫持数据---》给对象进行扩展---》属性进行设置。
 
 ```javascript
 function defineProperty (){
@@ -119,9 +245,58 @@ obj.a = 2; //调用set方法，将2的值传递给newVal，同时改变变量a�
 console.log(obj.a);  //调用get方法，获取到a的值，输出：2。
 ```
 
-> 在描述里**不能**同时存在 **writable，enumerable，configurable 和set()、get()共存**
+> 在描述 descriptor里**不能**同时存在 **writable，enumerable，configurable 和set()、get()共存**
 
 在上述代码中，打印`obj.a`的值输出了2，这是因为我们将 obj.a赋值为了2，调用了set方法，同时也会修改原有定义的a。故当下一次再调用get方法获取数据的时候，会去看看原有的数据有没有被修改，返回的是最新的数据。
+
+### 关于数据劫持
+
+**定义**：数据劫持，值指的是访问或者修改对象的某个属性时，通过一段代码拦截这个行为，进行额外的操作（比如加上console语句，或者输出一些长句子，向上面这样就是进行了额外的操作）或者修改返回结果。
+
+### 怎样使用Object.defineProperty操作数组？
+
+因为Object.defineProperty不能监听数组的变化，数组的push、pop、shift、unshift、splice、sort、reverse方法不会被触发。
+
+```javascript
+function DataArr(){
+    var _val = null; //object
+    var _arr = [];
+    Object.defineProperty(this,'val',{
+        get:function(){
+            return _var;
+        }
+        set:function(newVal){
+        	_val = newVal;
+        	_arr.push({val:_val});
+        	console.log('A new value"' + _val + '" has been pushed to _arr')
+        }
+    });
+	this.getArr = function(){
+        return _arr;
+    }
+}
+
+//使用new创建一个对象，这时this就指向创建的这个变量
+var dataArr = new DataArr();
+dataArr.val = 123;
+dataArr.val = 234;
+console.log(dataArr.getArr());
+```
+
+![image-20220303095147324](https://gitee.com/guoluyan53/image-bed/raw/master/img/image-20220303095147324.png)
+
+这里使用创建对象的形式来改变数组。
+
+## 6. Vue3.0 里的Proxy
+
+**形式**：`Proxy(target,handler)`
+
+- target：目标对象，你要进行处理的对象
+- handler 容器   无数可以处理的对象方法，自定义对象属性的获取，复制，枚举，函数调用等功能。
+
+
+
+
 
 # 三、Vue区别篇
 
@@ -1266,6 +1441,10 @@ vue中key值的作用可以分为两种情况来考虑：
 ### 为什么不建议index作为key？
 
 使用index作为key和没写基本上没有去区别，因为不管数组的顺序怎么颠倒，index都是0,1,2...这样排列，导致Vue会复用错误的旧子节点，做很多额外的工作。
+
+# 十、变化侦测
+
+# 十一、模板编译
 
 
 
