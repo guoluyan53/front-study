@@ -1,3 +1,5 @@
+[TOC]
+
 ![Vue面试题.png](https://gitee.com/guoluyan53/image-bed/raw/master/img/1621612367141-93b24efc-8b06-4c10-8259-586cd8c6c5d5.png)
 
 # 一、Vue基础
@@ -289,12 +291,76 @@ console.log(dataArr.getArr());
 
 ## 6. Vue3.0 里的Proxy
 
+> Proxy是代理的意思，其实就是代理一个对象，替这个对象完成想要的功能。
+>
+> Proxy可以直接处理对象、数组、函数等引用类型的值。
+
 **形式**：`Proxy(target,handler)`
 
 - target：目标对象，你要进行处理的对象
 - handler 容器   无数可以处理的对象方法，自定义对象属性的获取，复制，枚举，函数调用等功能。
 
+### 可以直接修改对象
 
+```javascript
+var target = {
+    a:1,
+    b:2
+}
+let proxy = new Proxy(target,{
+    //get接收两个参数，第一个是要改变的对象，第二个是对象属性
+    get(target,prop){ 
+        return 'this is property value' + target[prop];
+    }
+    //set接收三个参数，第一个是要改变的对象，第二个是对象属性，第三个是要修改的值
+    set(target,prop,value){
+    target[prop] = value;
+    console.log(target[prop]);
+}
+});
+
+console.log(proxy.a);  //this is property value 1
+console.log(target.a);  //1
+proxy.b = 3;       //修改b的值为3
+console.log(target);   //{a:1,b:3}
+```
+
+### 可以直接修改数组
+
+```javascript
+let arr = [
+    {name:'小明',age:19},
+    {name:'小王',age:29},
+    {name:'小化',age:13},
+    {name:'小李',age:45},
+];
+let persons = new Proxy(arr,{
+    get(arr,prop){
+        return arr[prop];
+    },
+    set(arr,prop,value){
+        arr[prop] = value;
+    }
+});
+console.log(persons[2]);  //{name:'小化',age:13}
+persons[1] = {name:'小转换',age:13};
+console.log(persons,arr); //是修改后的结果，是一样的
+```
+
+### 直接修改函数
+
+```javascript
+let fn = function(){
+    console.log('i am a function');
+}
+fn.a = 123;
+let newFn = new Proxy(fn,{
+    get(fn,prop){
+        return fn[prop] + 'this is a Proxy return';
+    }
+})
+console.log(newFn.a)
+```
 
 
 
