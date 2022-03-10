@@ -220,6 +220,201 @@ NaN是一个特殊值，它和自身不相等，是唯一一个非自反的值�
 - 使用三等号（===）进行相等判断时，如果两边类型不一致时，不会做强制类型转换，直接返回false
 - Object.is()来进行相等判断，一般情况下和三等号的判断相等相同，它处理了一些特殊情况，比如+0和-0不再相等，两个NaN是相等的。
 
+## 12. 什么是JavaScript中的包装类型？
+
+（1）在JavaScript中，基本类型是没有属性和方法的，但是为了便于操作基本类型的值，在调用基本类型的属性或方法时JavaScript会在后台**隐式地**将基本类型的值转换为对象，如：
+
+```javascript
+const a = 'abc';
+a.length;  //3
+a.toUpperCase(); //'ABC'
+```
+
+在访问 `'abc.length'`时，JavaScript将 `'abc'`在后台转换成 `String('abc')`，然后再访问其 `length`属性。
+
+（2）JavaScript也可以使用 `Object`函数**显示地**将基本类型转换为**包装类型**：
+
+```javascript
+var a = 'abc';
+Object(a);  //String{"abc"}
+```
+
+（3）也可以使用 `valueOf`方法**将包装类型倒转成基本类型**：
+
+```javascript
+var a = 'abc';
+var b = Object(a);
+var c = b.valueOf();  //'abc'
+```
+
+**一个栗子**：
+
+看看下面代码会打印出什么：
+
+```javascript
+var a = new Boolean(false);
+if(!a){
+    console.log("Oops");  //never runs
+}
+```
+
+答案是什么也不会打印，因为虽然包裹的基本类型是 `false`，但是 false被包裹成包装类型后就成了对象，所以其非值为 `false`，所以循环体中的内容不会执行。
+
+## 13、JavaScript中如何进行隐式类型转换？
+
+了解一下 `ToPrimitive`方法，这是JavaScript中每个隐含的自带方法，用来将值（无论是基本类型值还是对象）转换为基本类型值。如果值为基本类型，则直接返回值本身；如果值为对象，则是下面这样的：
+
+```javascript
+/**
+@obj 需要转换的对象
+@type 期望的结果类型
+*/
+ToPrimitive(obj,type)
+```
+
+**type 的值为 number 或者 string。**
+
+**（1）当type为number时规则如下**：
+
+- 调用obj的`valueOf`方法，如果为原始值，则返回，否则下一步
+- 调用obj的`toString`方法，后续同上
+- 抛出异常 `TypeError`异常
+
+**（2）当type为 string 时规则如下**：
+
+- 调用obj 的`toString` 方法，如果为原始值，则返回，否则下一步
+- 调用obj的`valueOf`方法，后续同上
+- 抛出 `TypeError`异常。
+
+可以看出两者的主要区别在于调用 `toString` 和 `valueOf`的先后顺序。默认情况如下：
+
+- 如果对象为Date对象，则type默认为`string`
+- 其他情况下，type默认为`number`
+
+> 总结上面的规则，对于Date以外的对象，转换为基本类型的大概规则可以概括为一个函数;
+
+```javascript
+var objToNumber = value => Number(value.valueOf().toString());
+objToNumber([]) === 0;
+objToNumber({}) === NaN
+```
+
+而 JavaScript 中的隐式类型转换主要发生在`+、-、*、/`以及`==、>、<`这些运算符之间。而这些运算符只能操作基本类型值，所以在进行这些运算前的第一步就是将两边的值用`ToPrimitive`转换成基本类型，再进行操作。
+
+## 14、隐式转换规则
+
+JavaScript中的隐式转换主要发生在 `+、-、*、/`以及 `==、>、<`这些运算符之间。而这些运算符只能操作基本类型值，所以在进行这些运算前的第一步就是将两边的值用 `ToPrimitive`转换为基本类型，再进行操作。
+
+1、**`+`操作符**：操作符的两边有至少一个 `string`类型变量时，两边的变量都会被隐式转换为字符串；其他情况下两边的变量都会被转换为数字。
+
+```javascript
+1 + '23' // '123'
+ 1 + false // 1 
+ 1 + Symbol() // Uncaught TypeError: Cannot convert a Symbol value to a number
+ '1' + false // '1false'
+ false + true // 1
+```
+
+**2、`-`、`*`、`\`操作符：`NaN`也是一个数字**
+
+```javascript
+1*'23'  //23
+1*false //0
+1 / 'aa' //NaN
+```
+
+**3、对于 `==`操作符**
+
+操作符两边的值都尽量转成 `number`：
+
+```javascript
+3 == true // false, 3 转为number为3，true转为number为1
+'0' == false //true, '0'转为number为0，false转为number为0
+'0' == 0 // '0'转为number为0
+```
+
+**4、对于 < 和 >比较符**
+
+如果两边都是字符串，则比较字母表顺序：
+
+```javascript
+'ca' < 'bd'; //false
+'a' < 'b';   //true
+```
+
+其他情况下，转换为数字再比较
+
+```javascript
+'12' < 13; //true
+false > -1;  //true
+```
+
+> 以上说的是基本类型的隐式转换，而对象会被 `ToPrimitive`转换为基本类型再进行转化：
+
+```javascript
+var a = {};
+a > 2;  //  false
+```
+
+其对比过程如下：
+
+```javascript
+a.valueOf() // {}, 上面提到过，ToPrimitive默认type为number，所以先valueOf，结果还是个对象，下一步
+a.toString() // "[object Object]"，现在是一个字符串了
+Number(a.toString()) // NaN，根据上面 < 和 > 操作符的规则，要转换成数字
+NaN > 2 //false，得出比较结果
+```
+
+**又一个栗子**：
+
+```javascript
+var a = {name:'Jack'}
+var b = {age: 18}
+a + b // "[object Object][object Object]"
+```
+
+运算过程如下：
+
+```javascript
+a.valueOf() // {}，上面提到过，ToPrimitive默认type为number，所以先valueOf，结果还是个对象，下一步
+a.toString() // "[object Object]"
+b.valueOf() // 同理
+b.toString() // "[object Object]"
+a + b // "[object Object][object Object]"
+```
+
+## 15、+ 操作符什么时候用于字符串的拼接
+
+根据ES5规范，**如果某个操作数是字符串或者能够通过以下步骤转换为字符串的话，+将进行拼接操作**。如果其中一个操作是对象（包括数组），则首先对其调用ToPrimitive抽象操作，该抽象操作再调用[[DefaultValue]]，以数字作为上下文。如果不能转换为字符串，则会将其转换为数字类型来计算。
+
+简单来说就是，如果 + 的其中一个操作数是字符串（或者通过以上步骤最终得到字符串），则执行字符串拼接，否则执行数字加法。
+
+那么对于除了加法的运算符来说，只要其中一方是数字，那么另一方就会被转为数字
+
+## 16、为什么会有BigInt的提案
+
+JavaScript中Number.Max_SAFE_INTEGER表示最大安全数字，计算结果是9007199254740991，即在这个数范围内不会出现精度丢失（小数除外）。但是一旦超过这个范围，js就会出现计算不准确的情况，这在大数计算的时候不得不依靠一些第三方库进行解决，因此官方提出了BigInt来解决此问题。
+
+## 17、如何判断一个对象是空对象？
+
+**（1）使用JSON自带的.stringify方法来判断**：
+
+```javascript
+if(JSON.stringify(Obj)=='{}'){
+    console.log('空对象');
+}
+```
+
+**（2）使用ES6新增的方法 Object.keys()来判断**：
+
+```javascript
+if(Object.keys(Obj).length < 0){
+    console.log('空对象');
+}
+```
+
+
+
 # 二、ES6
 
 ## 1、let、const、var的区别
@@ -400,6 +595,161 @@ const {name ,age} = stu;
 const {age,name} = stu;
 ```
 
+## 10、扩展运算符的作用及使用场景
+
+### **（1）对象扩展运算符**
+
+对象的扩展运算符（...)用于取出参数对象中的所有可遍历属性，拷贝到当前对象之中。
+
+```javascript
+let bar = {a:1,b:2};
+let baz = {...bar};  //{a:1,b:2}
+```
+
+**还可以用来修改对象的属性**。如果用户自定义的属性，放在扩展运算符后面，则扩展运算符的同名属性会被覆盖掉。
+
+```javascript
+let bar = {a: 1, b: 2};
+let baz = {...bar, ...{a:2, b: 4}};  // {a: 2, b: 4}
+```
+
+需要注意：**扩展运算符对对象实例的拷贝属于浅拷贝**
+
+### **（2）数组扩展运算符**
+
+数组的扩展运算符可以将一个数组转换为用以逗号分隔的参数序列，**且每次只能展开一层数组**。
+
+```javascript
+console.log(...[1, 2, 3])
+// 1 2 3
+console.log(...[1, [2, 3, 4], 5])
+// 1 [2, 3, 4] 5
+```
+
+> 数组的扩展运算符的应用：
+
+**（1）将数组转换为参数序列**：
+
+```javascript
+function add(x,y){
+    return x+y;
+}
+const numbers = [1,2];
+add(...numbers);  //3
+```
+
+**（2）复制数组**
+
+```javascript
+const arr1 = [1,2];
+const arr2 = [...arr1];
+```
+
+要记住：**扩展运算符（...)用于取出参数对象中的所有可遍历属性，拷贝到当前对象之中**，这里参数对象是个数组，数组里面的所有对象都是基础数据类型，将所有基础数据类型重新拷贝到新的数组中。
+
+**（3）合并数组**
+
+在数组内合并数组：
+
+```javascript
+const arr1 = ['two','three'];
+const arr2 = ['one',...arr1,'four','five'];
+//["one", "two", "three", "four", "five"]
+```
+
+**（4）扩展运算符与解构赋值结合起来，用于生成数组**
+
+```javascript
+const [first,...rest] = [1,2,3,4,5];
+first //1
+rest  // [2,3,4,5]
+```
+
+注意：**如果将扩展运算符用于数组赋值，只能放在参数的最后一位，否则会报错**。
+
+```javascript
+const [...rest, last] = [1, 2, 3, 4, 5];         // 报错
+const [first, ...rest, last] = [1, 2, 3, 4, 5];  // 报错
+```
+
+**（5）将字符串转为真正的数组**
+
+```javascript
+[...'hello'];  //['h','e','l','l','o']
+```
+
+**（6）任何Iterator接口的对象，都可以用扩展运算符转为真正的数组**。比较常见的应用是可以将某些数据结构转换为数组：
+
+```javascript
+//将arguments对象转换为数组
+function foo(){
+    const args = [...arguments];
+}
+```
+
+用于替换 es5 中的 `Array.prototype.slice.call(arguments)`写法。
+
+**（7）使用Math函数获取数组中特定的值**
+
+```javascript
+const numbers = [9,4,7,1];
+Math.min(...numbers); //1
+Math.max(...numbers); //9
+```
+
+## 11、ES6中模板语法与字符串处理
+
+### ES6模板语法
+
+> `` 和 ${}
+
+```javascript
+var name = 'css'   
+var career = 'coder' 
+var hobby = ['coding', 'writing']
+var finalString = `my name is ${name}, I work as a ${career} I love ${hobby[0]} and ${hobby[1]}`
+```
+
+- 在模板字符串中，空格、缩进、换行都会被保留
+- 模板字符串完全支持“运算”式的表达式，可以在${}里完成一些计算
+
+### 存在性判定
+
+在过去，当判断一个字符/字符串是否在某字符串中时，只能用indexOf > -1 来做。现在ES6提供了三个方法：`includes`、`startWith`、`endsWith`，他们都会返回一个布尔值来告诉你是否存在。
+
+**（1）ncludes**：判断字符串与子串的包含关系：
+
+```javascript
+const son = 'haha' 
+const father = 'xixi haha hehe'
+father.includes(son) // true
+```
+
+**（2）startWith：**判断字符串是否以某个/某串字符开头：
+
+```javascript
+const father = 'xixi haha hehe'
+father.startsWith('haha') // false
+father.startsWith('xixi') // true
+```
+
+**（3）endsWith**：判断字符串是否以某个/某串字符结尾：
+
+```javascript
+const father = 'xixi haha hehe'
+father.endsWith('hehe') // true
+```
+
+**（4）自动重复**：可以使用 `repeat` 方法来使同一个字符串输出多次（被连续复制多次）：
+
+```javascript
+const sourceCode = 'repeat for 3 times;'
+const repeated = sourceCode.repeat(3) 
+console.log(repeated) // repeat for 3 times;repeat for 3 times;repeat for 3 times;
+```
+
+
+
 # 三、JS基础
 
 ## 1. new操作符的执行过程
@@ -443,7 +793,101 @@ for(var k of obj){
 }
 ```
 
-# 四、原型和原型链
+![image-20220310101056465](https://gitee.com/guoluyan53/image-bed/raw/master/img/image-20220310101056465.png)
+
+
+
+## 4、Map和Object的区别
+
+|          | Map                                                          | Object                                                       |
+| -------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| 意外的键 | Map默认情况不包含任何键，只包含显示插入的键                  | Object有一个原型，原型链上的键名有可能和自己在对象上的设置的键名产生冲突 |
+| 键的类型 | Map的键可以是任意值，包括函数、对象或任意基本类型            | Object的键必须是String或是Symbol                             |
+| 键的顺序 | Map中的key是有序的。因此，当迭代的时候，Map对象以插入的顺序返回键值。 | Object的键是无序的                                           |
+| Size     | Map的键值对个数可以轻易地通过size属性获取                    | Object的键值对个数只能手动计算                               |
+| 迭代     | Map是 Iterator的，所以可以直接被迭代                         | 迭代Object需要以某种方式获取它的键然后才能迭代               |
+| 性能     | 在频繁增删键值对的场景下表现更好                             | 在频繁添加或删除键值对的场景下未作出优化                     |
+
+## 5、Map和WeakMap的区别
+
+**（1）[Map](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Map)**
+
+Map本质上就是键值对的集合，但是普通的Object中的键值对中键只能是string或symbol类型。**而ES6提供的Map数据结构类似于对象**，但是它的键不限制范围，可以是任意类型，是一种更加完善的Hash结构。如果Map的键是一个原始数据类型，只要两个键严格相同，就视为是同一个键。
+
+实际上Map是一个数组，它的每一个数据也都是一个数组，其形式如下：
+
+```javascript
+const map = [
+    ["name":"张三"],
+    ["age":19]
+]
+```
+
+Map数据结构有以下操作方法：
+
+- **size**：`map.size`返回Map结构的成员总数。
+- **set(key,value)**：设置键名key对应的键值value，然后返回整个Map结构，如果key已经有值，则键值会被更新，否则就新生成该键（因为返回的是当前Map对象，所以可以链式调用）
+- **get(key)**：该方法读取key对应的键值，如果找不到key，返回undefined。
+- **has(key)**：该方法返回一个布尔值，表示某个键是否在当前Map对象中。
+- **delete(key)**：该方法删除某个键，返回true，如果删除失败，返回false。
+- **clear()**：map.clear()清除所有成员，没有返回值。
+
+> Map结构原生提供是三个遍历器生成函数和一个遍历方法
+>
+> - keys()：返回键名的遍历器
+> - values()：返回键值的遍历器
+> - entries()：返回所有成员的遍历其
+> - forEach()：遍历Map的所有成员
+
+```javascript
+const map = new Map([
+     ["foo",1],
+     ["bar",2],
+])
+for(let key of map.keys()){
+    console.log(key);  // foo bar
+}
+for(let value of map.values()){
+     console.log(value); // 1 2
+}
+for(let items of map.entries()){
+    console.log(items);  // ["foo",1]  ["bar",2]
+}
+map.forEach( (value,key,map) => {
+     console.log(key,value); // foo 1    bar 2
+})
+```
+
+**（2）[WeakMap](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/WeakMap)**
+
+WeakMap对象也是一组键值对的集合，其中的键是弱引用的。**其键必须是对象**，原始数据类型不能作为key值，而值可以是任意的。
+
+该对象也有 **set(key,value) | get(key) | has(key) | delete(key)** 方法。其clear()方法已经被弃用，所以可以通过创建一个空的WeakMap并替换原对象来实现清除。
+
+> WeakMap的设计目的：
+>
+> 有时想在某个对象上面存放一些数据，但是这会形成对这个对象的引用。一旦不再需要这两个对象，就必须手动删除这个引用，否则垃圾回收机制就不会释放对象占用的内存。
+>
+> 而WeakMap的 **键名所引用的对象都是弱引用**，即垃圾回收机制不将该引用考虑在内。因此，只要所引用的对象的其他引用都被清除，垃圾回收机制就会释放该对象所占用的内存。也就是说，一旦不再需要，WeakMap里面的 **键名对象和所对应的键值对会自动消失，不用手动清除引用**。
+
+**总结：**
+
+- Map 数据结构。它类似于对象，也是键值对的集合，但是“键”的范围不限于字符串，各种类型的值（包括对象）都可以当作键。
+- WeakMap 结构与 Map 结构类似，也是用于生成键值对的集合。但是 WeakMap 只接受对象作为键名（ null 除外），不接受其他类型的值作为键名。而且 WeakMap 的键名所指向的对象，不计入垃圾回收机制。
+
+## 6、JavaScript有哪些内置对象？
+
+**全局的对象**（global objects）或称**标准内置对象**，不要和“全局对象（global object）”混淆，这里说的全局的对象是说在全局作用域里的对象。全局作用域中的其他对象可以有用户的脚本创建或宿主程序提供。
+
+标准内置对象的分类：值属性、函数属性、基本对象、数字和日期对象、字符串，用来表示和操作字符串的对象、可索引的集合对象、使用键的集合对象、矢量集合、结构化数据、控制抽象对象、反射、国际化、WebAssembly、其他。
+
+**总结：**
+
+js 中的内置对象主要指的是在程序执行前存在全局作用域里的由 js 定义的一些全局值属性、函数和用来实例化其他对象的构造函数对象。一般经常用到的如全局变量值 NaN、undefined，全局函数如 parseInt()、parseFloat() 用来实例化对象的构造函数如 Date、Object 等，还有提供数学计算的单体内置对象如 Math 对象。
+
+# 四、
+
+# 原型和原型链
 
 > - 构造函数原型prototype
 > - 对象原型 __ proto __ 
@@ -584,7 +1028,7 @@ for(var i = 1;i <= 5; i++){
 for(var i = 1;i<=5;i++){
     (function(j){
         setTimeout(function timer(){
-            console.log(i);
+            console.log(j);
         },j*1000)
     })(i)
 }
