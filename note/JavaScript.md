@@ -1,5 +1,9 @@
 ![img](https://gitee.com/guoluyan53/image-bed/raw/master/img/1621500410361-1f8976b5-7b26-4803-b5c3-d0ec8cd819d8.png)
 
+[TOC]
+
+
+
 # 一、数据类型
 
 ## 1、JavaScript有哪些数据类型，它们的区别？
@@ -779,7 +783,7 @@ console.log(repeated) // repeat for 3 times;repeat for 3 times;repeat for 3 time
 
 for…of是作为ES6新增的遍历方式，允许遍历一个含有iterator接口的数据结构（数组、对象等）并且返回各项的值，普通的对象用for..of遍历是会报错的。
 
-如果需要遍历的对象是类数组对象，用Array.from转成数组即可。
+（1）如果需要遍历的对象是**类数组对象**，用Array.from转成数组即可。
 
 ```javascript
 var obj = {
@@ -794,6 +798,49 @@ for(var k of obj){
 ```
 
 ![image-20220310101056465](https://gitee.com/guoluyan53/image-bed/raw/master/img/image-20220310101056465.png)
+
+（2）如果不是类数组对象，就给对象添加一个[Symbol.iterator]属性，并指向一个迭代器即可。
+
+```javascript
+//方法一
+var obj = {
+    a:1,
+    b:2,
+    c:3
+};
+obj[Symbol.iterator] = function(){
+    var keys = Object.keys(this);
+    var conut = 0;
+    return {
+        next(){
+            if(count<keys.length){
+                return {value:obj[keys[count++]],done:false;}
+            }else{
+                return {value:undefined,done:true};
+            }
+        }
+    }
+};
+for(var k of obj){
+    console.log(k);
+}
+
+//方法二
+var obj = {
+    a:1,
+    b:2,
+    c:3
+};
+obj[Symbol.iterator] = function*(){
+    var keys = Object.keys(obj);
+    for(var k of keys){
+        yield [k,obj[k]]
+    }
+};
+for(var [k,v] of obj){
+    console.log(k,v);
+}
+```
 
 
 
@@ -917,7 +964,7 @@ JSON是一种基于文本的轻量级的**数据交换格式**。它可以被任
 
 > 延迟加载就是等页面加载完成之后再加载JavaScript文件。js延迟加载有助于提高页面加载速度。
 
-- **defer属性**：给js脚本添加defer属性，这个属性会让脚本的加载与文档的解析同步解析，然后在文档解析完成后再执行这个脚本文件，这样的haul就能使页面的渲染不被阻塞。多个设置了defer属性的脚本按规范来说最后是顺序执行的，但是在一些浏览器中可能不是这样。
+- **defer属性**：给js脚本添加defer属性，这个属性会让脚本的加载与文档的解析同步解析，然后在文档解析完成后再执行这个脚本文件，这样的话就能使页面的渲染不被阻塞。多个设置了defer属性的脚本按规范来说最后是顺序执行的，但是在一些浏览器中可能不是这样。
 - **async属性**：给js脚本添加async属性，这个属性会使脚本异步加载，不会阻塞页面的解析过程，但是当脚本加载完后立即执行js脚本，这个时候如果文档没有解析完成的话同样会阻塞。多个async属性的脚本的执行顺序是不可预测的，一般不会按照代码的顺序依次执行。
 - **动态创建DOM方式**：动态创建DOM标签的方式，可以对文档加载事件进行监听，当文档加载完成后再动态的创建script标签来引入js脚本。
 - **使用setTimeOut延迟方法**：设置一个定时器来延迟加载js脚本文件
@@ -931,9 +978,20 @@ JSON是一种基于文本的轻量级的**数据交换格式**。它可以被任
 
 **（1）通过call调用数组的slice方法来实现转换**：不会改变原数组
 
+> 关于为什么Array.prototype.slice可以使用call方法，是这样的：先把arraylike转换为数组后（使用call），才能使用数组的slice方法 。[详细解释请看](https://www.jianshu.com/p/cad018776583)
+
 ```javascript
-Array.prototype.slice.call(arraylike);
+arraylike = {
+    0:'33',
+    1:'232',
+    length:2
+}
+var arr = Array.prototype.slice.call(arraylike);
+console.log(arraylike);
+console.log(arr);
 ```
+
+![image-20220312095325029](https://gitee.com/guoluyan53/image-bed/raw/master/img/image-20220312095325029.png)
 
 **（2）通过call调用数组的splice方法**：会改变原数组
 
@@ -957,7 +1015,7 @@ Array.from(arraylike);
 
 - 数组和字符串的转换方法：`toString()`、`toLocaleString()`、`join()`。其中join方法可以指定转换为字符串时的分隔符。
 - 数组尾部操作的方法 `pop()`和 `push()`，push方法可以传入多个参数
-- 数组首部操作的方法 `shift()`和 `unshift()`
+- 数组首部操作的方法 `shift()移除`和 `unshift()添加`，返回长度。
 - 数组重排序方法 `reverse()`和 `sort()`，sort方法可以传入一个函数来进行比较，传入前后两个值，如果返回值为正数，则交换两个参数的位置。
 - 数组连接的方法 `concat()`，返回的是拼接好的数组，不影响原数组。
 - 数组截取 `slice()`，用于截取数组中的一部分返回，不影响原数组。
@@ -1024,6 +1082,103 @@ ES6 Module 和 CommonJs 模块的共同点：
 - 创建：createElement、appendChild
 - 删除：removeChild
 - 修改：insertBefore
+
+## 18、数组扁平化
+
+[参考文章](https://zhuanlan.zhihu.com/p/344241682)
+
+> 数组扁平化是指将一个多维数组变为一维数组。
+>
+> 例：[1,[2,3,[4,5]]] ---->  [1,2,3,4,5]
+
+**（1）通过concat将二维数组转化为一维数组**
+
+原理：通过将扩展运算符，将数组内部展开，并通过concat连接两个字符串的方式返回数组。
+
+```javascript
+let a = [12,3,45,[6,7,8]];
+let b = [].concat(...a);
+console.log(b);  //[12, 3, 45, 6, 7, 8]
+```
+
+**（2）使用数组方法join 和 字符串方法 split 进行数组扁平化**
+
+原理：通过join方法将数组转化为以点隔开的字符串，再使用split把转化的字符串转化为数组。通过map方法将内部字符串转化为数字类型的。
+
+```javascript
+let a = [1,2,[3,4,[5,6,7,8,[9,10]]]];
+console.log(a.join(',')); //1,2,3,4,5,6,7,8,9,10
+console.log(a.join(',').split(',')); 
+/*[
+  '1',  '2', '3',
+  '4',  '5', '6',
+  '7',  '8', '9',
+  '10'
+]*/
+let b = a.join(',').split(',').map(Number);
+console.log(b); //[1,2,3,4,5,6,7,8,9,10]
+```
+
+**（3）通过正则方法和JSON.stringify方法和数组方法**
+
+原理：首先将数组转化为字符串，使用字符串匹配正则规则，替换所有的'[' ']' 和方法类似。
+
+split主要是将字符串转化为数组，map将字符串数组转换为数字。
+
+```javascript
+let a = [1,2,[3,4,[5,6,7,8,[9,10]]]];
+let c = JSON.stringify(a).replace(/\[|\]/g,'').split(',').map(Number);
+console.log(c)//[1,2,3,4,5,6,7,8,9,10]
+```
+
+**（4）函数递归**
+
+原理：判断获取的当前值是不是数组，是数组就递归调用
+
+```javascript
+let a = [1,2,[3,4,[5,6,7,8,[9,10]]]];
+let d = [];
+function fn(arr){
+    for(let i=0;i<arr.length;i++){
+        if(Array.isArray(arr[i])){
+            fn(arr[i]);
+        }else{
+            d.push(arr[i]);
+        }
+    }
+}
+fn(a);
+console.log(d);  //[1,2,3,4,5,6,7,8,9,10]
+```
+
+**（5）通过reduce方法进行数组扁平化**
+
+原理：主要通过reduce的依次进行，判断当前拿到的是不是数组，是数组就进行递归将内部所有数组扁平化（与方法四类似）
+
+```javascript
+let a = [1,2,[3,4,[5,6,7,8,[9,10]]]];
+function flatten(arr){
+    return arr.reduce((result,item)=>{
+       console.log(result,item);
+       return result.concat(Array.isArray(item) ? flatten(item):item);
+    },[])
+};
+console.log(flatten(a));  //[1,2,3,4,5,6,7,8,9,10]
+```
+
+![image-20220312160713214](https://gitee.com/guoluyan53/image-bed/raw/master/img/image-20220312160713214.png)
+
+**（6）ES6新增方法flat()**
+
+```javascript
+let a = [4, 1, 2, 3, 6, [7, 8, [3, 9, 10, [4, 6, 11]]]]; 
+let e = a.flat()   // 不传参的时候 表示将二维数组转一维数组
+console.log(e)     // [4, 1, 2, 3, 6, 7, 8, Array(4)]
+let f = a.flat(2)  // 传入2 表示将两层嵌套数组 转化为一维数组
+console.log(f)     // [4, 1, 2, 3, 6, 7, 8, 3, 9, 10, Array(3)]
+let g = a.flat(Infinity) // Infinity 使用这个关键字可以将所包含的所谓数组转化为一维数组
+console.log(g)     // [4, 1, 2, 3, 6, 7, 8, 3, 9, 10, 4, 6, 11]
+```
 
 
 
@@ -1502,7 +1657,7 @@ function debounce(func,delay){
         let args = arguments;
         clearTimeout(timer);
         timer = setTimeout(function(){
-            func.apply(context,arguments);
+            func.apply(context,args);
         },delay);
     }
 }
@@ -2121,7 +2276,7 @@ friend.sayName();
 
 ### ① 原型链的方式
 
-这个方式存在的缺点是，在包含有引用类型的数据时，会被所有的实例对象所共享，容易造成修改混乱。海慧寺就是在创建子类型的时候不能向超类型传递参数。
+这个方式存在的缺点是，在包含有引用类型的数据时，会被所有的实例对象所共享，容易造成修改混乱。还有就是在创建子类型的时候不能向超类型传递参数。
 
 ### ② 借用构造函数的方式
 
@@ -2137,5 +2292,8 @@ friend.sayName();
 
 ### ⑤ 寄生式继承
 
+寄生式继承的思路是创建一个用于封装继承过程的函数，通过传入一个对象，然后复制一个对象的副本，然后对象进行扩展，最后返回这个对象。这个扩展的过程就可以理解是一种继承。这种继承的优点就是对一个简单对象实现继承，如果这个对象不是自定义类型时。缺点就是没有办法实现函数复用。
+
 ### ⑥ 寄生式组合继承
 
+组合继承的缺点就是使用超类型的实例作为子类型的原型，导致添加了不必要的原型。寄生式组合继承的方式是使用超类型的原型的副本来作为子类型的原型，这样就避免了创建不必要的属性。
