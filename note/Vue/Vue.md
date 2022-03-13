@@ -144,7 +144,22 @@ vue中 v-model 可以实现数据的双向绑定，但是为什么这个指令�
 </script>
 ```
 
+## 9、常见的事件修饰符及其作用
 
+- `.stop`：等同于JavaScript中的 `event.stopPropagation()`，防止事件冒泡；
+- `.prevent`：等同于JavaScript中的 `event.preventDefault()`，防止执行预设的行为（如果事件可取消，则取消该事件，而不停止事件的进一步传播）；
+- `.capture`：与事件冒泡的方向相反，事件捕获由外到内；
+- `.self`：只会触发自己范围内的事件，不包含子元素；
+- `.once`：只会触发一次。
+
+## 10、Vue单页面应用与多页面应用的区别
+
+**概念**：
+
+- SPA单页面应用（SinglePage Web Application），指只有一个主页面的应用，一开始只需要加载一次js，css等相关资源。所有内容都包含在主页面，对每一个功能模块组件化。单页面应用跳转，就是切换相关组件，仅仅刷新局部资源。
+- MAP多页面应用（MultiPage Application），指有多个独立页面的应用，每个页面必须重复加载js、css等相关资源。多页面应用跳转需要整个页资源刷新。
+
+![775316ebb4c727f7c8771cc2c06e06dd.jpg](https://gitee.com/guoluyan53/image-bed/raw/master/img/1609521413572-54d0bd0f-8ed6-4438-997a-c890e4cd9c5e.jpeg)
 
 # 二、Vue原理篇
 
@@ -1508,9 +1523,7 @@ vue中key值的作用可以分为两种情况来考虑：
 
 使用index作为key和没写基本上没有去区别，因为不管数组的顺序怎么颠倒，index都是0,1,2...这样排列，导致Vue会复用错误的旧子节点，做很多额外的工作。
 
-# 十、变化侦测
 
-# 十一、模板编译
 
 
 

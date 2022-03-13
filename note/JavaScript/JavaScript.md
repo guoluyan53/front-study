@@ -93,17 +93,19 @@ console.log(f.constructor===Array); // true
 ```javascript
 var a = Object.prototype.toString;
  
-console.log(a.call(2));
-console.log(a.call(true));
-console.log(a.call('str'));
-console.log(a.call([]));
-console.log(a.call(function(){}));
-console.log(a.call({}));
-console.log(a.call(undefined));
-console.log(a.call(null));
+console.log(a.call(2)); //[object Number]
+console.log(a.call(true)); //[object Boolean]
+console.log(a.call('str')); //[object String ]
+console.log(a.call([])); //[object Array]
+console.log(a.call(function(){})); //[object Function]
+console.log(a.call({}));//[object Object]
+console.log(a.call(undefined)); //[object undefined]
+console.log(a.call(null)); //[object null]
 ```
 
-同样是检测对象obj调用toString方法，obj.toString()的结果和Object.prototype.toString.call(obj)的结果不一样，这是为什么？
+![QQ图片20220313090757](https://gitee.com/guoluyan53/image-bed/raw/master/img/QQ图片20220313090757.png)
+
+检测对象obj调用toString方法，obj.toString()的结果和Object.prototype.toString.call(obj)的结果不一样，这是为什么？
 
 这是因为toSting是object的原型方法，而Array、function等 **类型作为Object的实例，都重写了toString方法**。不同的对象类型调用toString方法时，根据原型链的知识，调用的是对应的重写之后的toString方法（function类型返回内容为函数体的字符串，Array类型返回元素组成的字符串...），而不会去调用Object上原型toString方法（返回对象的具体类型），**所以采用`obj.toString()`不能得到其对象类型，只能将obj转换为字符串类型，因此，在想要得到对象的具体类型时，应该调用Object原型上的toString方法。**
 
@@ -150,7 +152,7 @@ console.log(n1+n2);   //0.30000000000000004
 想要等于0.3，就要把它转化：
 
 ```javascript
-(n1+n2).toFixed(2)   //注意：toFixed为四舍五入
+(n1+n2).toFixed(1)   //注意：toFixed为四舍五入，括号里表示保留几位小数
 ```
 
 计算机是通过二进制的方式存储数据的，所以计算0.1+0.2是计算两个数的二进制的和。这两个数的二进制都是无限循环的数。
@@ -842,7 +844,15 @@ for(var [k,v] of obj){
 }
 ```
 
+## 3.5、for...in 和 for...of的区别
 
+for...of是es6新增的遍历方式，允许遍历一个含有Iterator接口的数据结构（对象、数组）等并且返回各项的值。
+
+- for of 遍历获取的是对象的键值value，for in 获取的是对象的键名key
+- for in 会遍历对象的整个原型链，性能非常差不推荐使用，而for of 只遍历当前对象不会遍历原型链
+- 对于数组的遍历，for in 会返回数组中所有可枚举的属性（包括原型链上可枚举的属性），for of 只返回数组的下标对应的属性值；
+
+**总结：for in 主要用于遍历对象而生，不适用于遍历数组；for of 循环可以用来遍历数组、类数组对象，字符串，Set，Map以及生成器对象等可迭代的对象**
 
 ## 4、Map和Object的区别
 
@@ -1180,7 +1190,97 @@ let g = a.flat(Infinity) // Infinity 使用这个关键字可以将所包含的�
 console.log(g)     // [4, 1, 2, 3, 6, 7, 8, 3, 9, 10, 4, 6, 11]
 ```
 
+## 19、use strict是什么意思？使用它区别是什么？
 
+use strict 是一种ES5添加的（严格模式）运行模式，这种模式使得JavaScript在更严格的条件下运行。设立严格模式的目的如下：
+
+- 消除JavaScript语法不合理、不严谨之处，减少怪异行为
+- 消除代码 运行的不安全之处，保证代码运行的安全。
+- 提供编译器的效率，增加运行速度
+- 为未来新版本的JavaScript做好铺垫
+
+区别：
+
+- 禁止使用with语句
+- 禁止this关键字指向全局对象
+- 对象不能有重名的属性
+
+## 20、如何判断一个对象是否属于某个类？
+
+1. 第一种方式，使用instanceof 运算符来判断构造函数的prototype属性是否出现在对象的原型链中的任何位置。
+2. 通过对象的constructor属性来判断，对象的constructor属性指向该对象的构造函数，但是这种方式不是很安全，因为constructor属性可以被改写
+3. 如果需要判断的是某个内置的引用类型的话，可以使用Object.prototype.toString()方法来打印对象的[[Class]]属性来进行判断。
+
+## 21、强类型语言和弱类型语言的区别
+
+- **强类型语言**：强类型语言也称为强类型定义语言，是一种总是强制类型定义的语言，要求变量的使用要严格符合定义，所有变量都必须先定义后使用。一旦一个变量被指定了某个数据类型，如果不经过强制转换，那么它就永远是那个类型。例java和c++等语言。
+- **弱类型语言**：弱类型语言也被称为弱类型定义语言，与强类型定义相反。JavaScript语言就属于弱类型语言。就是一种变量的类型可以被忽略的语言。
+
+## 22、ajax、axios、fetch的区别
+
+**（1）ajax**
+
+ajax即（异步JavaScript和XML）。是一种在无需加载整个网页的情况下，能够更新部分网页的技术。
+
+缺点：
+
+- 本身是针对MVC编程的，不符合前端MVVM的浪潮
+- 基于原生XHR开发，XHR本身的架构不清晰
+- 不符合关注分离（Separation of Concerns）的原则
+- 配置和调用方式非常混乱，而且基于事件的异步模型不友好。
+
+**（2）[fetch](https://developer.mozilla.org/zh-CN/docs/Web/API/Fetch_API/Using_Fetch)**
+
+fetch号称是AJAX的替代品，是在ES6出现的，使用了ES6中的promise对象。Fetch是基于promise设计的。Fetch的代码结构比起ajax简单多。**Fetch不是ajax的进一步封装，而是原生js，没有使用XMLHttpRequest对象**。
+
+```javascript
+fetch('http://aaa.com/text.json')
+.then(response => response.json())
+.then(data => console.log(data));
+```
+
+
+
+**fetch的优点**：
+
+- 语法简洁，更加语义化
+- 基于标准的promise实现，支持async/await
+- 更加底层，提供的API丰富（Request，response）
+- 脱离了XHR，是ES规范里新的实现方式
+
+**fetch的缺点**：
+
+- fetch只对网络请求报错，对400,500都当做成功的请求，服务器返回400,500错误码时并不会reject，只有网络错误导致请求不能完成时，fetch才会被reject。
+- fetch默认不会带cookie，需要添加配置项：`fetch(url,credentials:'include'})`
+- fetch不支持abort，不支持超时控制，使用setTImeOut及Promise.reject的实现的超时控制并不能阻止请求过程继续在后台运行，造成了流量的浪费。
+- fetch没有方法原生检测请求的进度，而XHR可以。
+
+**（3）Axios**
+
+Axios 是一种基于Promise封装的HTTP客户端，其特点如下：
+
+- 浏览器端发起XMLHttpRequests请求
+- node端发起http请求
+- 支持Promise API
+- 监听请求和返回
+- 对请求和返回进行转化
+- 取消请求
+- 自动转换json数据
+- 客户端支持抵御XSRF攻击
+
+## 23、数组的遍历方法有哪些？
+
+> [细数JavaScript中那些遍历和循环](https://cuggz.blog.csdn.net/article/details/107649549)
+
+| **方法**                  | **是否改变原数组** | **特点**                                                     |
+| ------------------------- | ------------------ | ------------------------------------------------------------ |
+| forEach()                 | 否                 | 数组方法，不改变原数组，没有返回值                           |
+| map()                     | 否                 | 数组方法，不改变原数组，有返回值，可链式调用                 |
+| filter()                  | 否                 | 数组方法，过滤数组，返回包含符合条件的元素的数组，可链式调用 |
+| for...of                  | 否                 | for...of遍历具有Iterator迭代器的对象的属性，返回的是数组的元素、对象的属性值，不能遍历普通的obj对象，将异步循环变成同步循环 |
+| every() 和 some()         | 否                 | 数组方法，some()只要有一个是true，便返回true；而every()只要有一个是false，便返回false. |
+| find() 和 findIndex()     | 否                 | 数组方法，find()返回的是第一个符合条件的值；findIndex()返回的是第一个返回条件的值的索引值 |
+| reduce() 和 reduceRight() | 否                 | 数组方法，reduce()对数组正序操作；reduceRight()对数组逆序操作 |
 
 # 四、原型和原型链
 
