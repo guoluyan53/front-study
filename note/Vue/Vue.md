@@ -67,7 +67,7 @@ vue源码里缓存了array的原型链，然后重写了这几个方法，触发
 
 - Mixin使我们能够为Vue组件编写可插拔和可重用的功能。
 - 如果希望在多个组件之间重用一组组件选项，例如生命周期hook、方法等，则可以将其编写为mixin，并在组件中简单的引用它。
-- 然后将mixin的内容合并到组件中。如果你要在mixin中定义生命周期hook，那么它在执行时将优化组件自己的hook。
+- 然后将mixin的内容合并到组件中。如果你要在mixin中定义生命周期hook，那么它在执行时将优先组件自己的hook。
 
 ## 6. 对vue组件化的理解
 
@@ -160,6 +160,136 @@ vue中 v-model 可以实现数据的双向绑定，但是为什么这个指令�
 - MAP多页面应用（MultiPage Application），指有多个独立页面的应用，每个页面必须重复加载js、css等相关资源。多页面应用跳转需要整个页资源刷新。
 
 ![775316ebb4c727f7c8771cc2c06e06dd.jpg](https://gitee.com/guoluyan53/image-bed/raw/master/img/1609521413572-54d0bd0f-8ed6-4438-997a-c890e4cd9c5e.jpeg)
+
+## 11、Vue是如何收集依赖的？
+
+在初始化Vue的每个组件时，会对组件的data进行初始化，就会将普通对象变成响应式对象，在这个过程中便会进行依赖收集的相关逻辑，如下所示：
+
+```javascript
+function defineReactive(obj,key,val){
+    const dep = new Dep();
+    ...
+    Object.defineProperty(obj,key,{
+        ...
+        get:function reactiveGetter(){
+            if(Dep.target){
+                dep.depend();
+                ...
+            }
+            return val
+        }
+        ...
+    })
+}
+```
+
+以上只保留了关键代码，主要就是 `const dep = new Dep()`实例化一个Dep的实例，然后在get函数中通过 `dep.depend()`进行依赖收集。
+
+**（1）Dep**
+
+Dep是整个依赖收集的核心。Dep是一个class，其中有一个关键的静态属性static，它指向了一个全局唯一 Watcher，保证了同一时间全局只有一个watcher被计算，另一个属性subs则是一个Watcher的数组，**所以Dep实际上就是对Watcher的管理**。
+
+**（2）Watcher**
+
+Watcher是一个class，它定义了一些方法，其中和依赖收集相关的主要有get、addDep等。
+
+**（3）过程**
+
+在实例化Vue时，依赖收集的相关过程如下：
+
+初始化状态 initState，这中间便会通过 defineReactive将数据变成响应式对象，其中的getter部分便是用来收集依赖的。初始化最终会走mount过程，其中会实例化Watcher，进入Watcher中，便会执行this.get()方法。
+
+```javascript
+updateComponent = () =>{
+    vm._update(vm._render())
+}
+new Watcher(vm,updateComponent)
+```
+
+get 方法中的pushTarget实际上就是把 Dep.target赋值为当前的watcher。
+
+this.getter.call(vm,vm)，这里的getter会执行vm._render()方法，在这个过程中便会触发数据对象的getter。那么每个对象值的getter都持有一个dep，在触发getter的时候会调用dep.depend()方法，也就会执行Dep.target.addDep(this)。刚才Dep.target已经被赋值为watcher，于是便会执行addDep方法，然后走到dep.addSub()方法，便将当前的watcher订阅到这个数据持有的dep的subs中，这个目的是为后续数据变化时候能通知到哪些subs做准备。所以在vm. _  render()过程中，会触发所有数据的getter，这样便已经完成了整个依赖收集的过程。
+
+## 12、Vue的优点
+
+- **轻量级框架**：只关注视图层，是一个构建数据的视图集合，大小只有几十KB；
+- **简单易学**：中文文档
+- **双向数据绑定**：保留了 angular的特点，在数据操作方面更为简单；
+- **组件化**：保留了 react 的优点，实现了 HTML 的封装和重用，在构建单页面应用方面有着独特的优势。
+- **视图、数据、结构分离**：使数据的更改更为简单，不需要进行逻辑代码的修改，只需要操作数据就能完成相关操作。
+- **虚拟DOM**：dom操作是非常耗费性能的，不再使用原生的 DOM操作节点，极大解放DOM操作，但具体操作还是DOM，不过是换了另一种方式
+- **运行速度更快**：相较于 react 而言，同样是操作虚拟DOM，就性能而言，Vue存在很大的优势。
+
+## 13、assets 和 static的区别
+
+**相同点**：`assets` 和 `static`两个都是存放静态资源文件。项目中所需要的资源文件图片，字体图标，样式文件等都可以放在这两个文件下。
+
+**不同点**：
+
+- `assets`中存放的静态资源文件在项目打包时，也就是运行 `npm run build`时会将 `assets`中放置的静态资源文件进行打包上传，所谓打包简单点可以理解为压缩体积，代码格式化。而压缩后的静态资源文件最终也会放置在 `static`文件中跟着 `index.html`一同上传至服务器。
+- `static`中放置的静态文件就不会要走打包压缩格式化等流程，而是直接进入打包好的目录，直接上传至服务器。
+  - 因为避免了压缩直接进行上传，在打包时会提高一定的效率，但是 `static`中的资源文件由于没有进行压缩等操作，所以文件的体积也就相对于 `assets`中打包后的文件提交较大点。在服务器中就会占据更大的空间。
+
+**建议**：将项目中 `template`需要的样式文件js文件等都可以放置在 `assets`中，走打包这一流程。减少体积。而项目中引入的第三方的资源文件如 `iconfont.css`等文件可以放置在 `static`中，因为这些引入的第三方文件已经经过处理，不再需要处理，直接上传。
+
+## 14、delete 和 Vue.delete删除数组的区别
+
+- `delete`只是被删除的元素变成了 `empty/undefined`，其他的元素的键值还是不变。
+- `Vue.delete`直接删除了数组，改变了数组的键值。
+
+## 15、extend有什么作用
+
+这个API很少用到，作用是扩展组件生成一个构造器，通常会与 `$mount`一起使用。
+
+```javascript
+//创建组件构造器
+let Component = Vue.extend({
+    template: '<div>test</div>'
+})
+//挂载到#app上
+new Component().$mount('#app')
+//除了上面的方式，还可以用来扩展已有的组件
+let SuperComponent = Vue.extend(Component)
+new SuperComponent({
+    created(){
+        console.log(1)
+    }
+})
+new SuperComponent().$mount('#app')
+```
+
+## 16、mixin 和 mixins 区别
+
+`mixin`用于全局混入，会影响到每个组件实例，通常插件都是这样做初始化的。
+
+```javascript
+Vue.mixin({
+    beforeCreate(){
+        //...逻辑
+        //这种方式会影响到每个组件的 beforeCreate钩子函数
+    }
+})
+```
+
+虽然文档不建议在应用中直接使用 `mixin`，但是如果不滥用的话也是很有帮助的，比如可以全局混入封装好的 `ajax`或者一些工具函数等。
+
+`mixins`应该是最常用的扩展组件的方式了。如果多个组件中有相同的业务逻辑，就可以将这些逻辑剥离出来，通过 `mixins`混入代码，比如上拉下拉加载数据这种逻辑等
+
+另外要注意的是 `mixins`混入的钩子函数会先于组件内的钩子函数执行，并且在遇到同名选项的时候也会选择性的进行合并。
+
+## 17、MVVM的优缺点？
+
+**优点**：
+
+- 分离视图和模型，降低代码耦合，提高视图或者逻辑的重用性。
+- 提高可测试性：ViewModel的存在可以帮助开发者更好地编写测试代码
+- 自动更新DOM：利用双向绑定，数据更新后视图自动更新，让开发者从繁琐的手动DOM中解放。
+
+**缺点**: 
+
+- Bug很难被调试: 因为使⽤双向绑定的模式，当你看到界⾯异常了，有可能是你View的代码有Bug，也可能是Model的代码有问题。数据绑定使得⼀个位置的Bug被快速传递到别的位置，要定位原始出问题的地⽅就变得不那么容易了。另外，数据绑定的声明是指令式地写在View的模版当中的，这些内容是没办法去打断点debug的 
+-  ⼀个⼤的模块中model也会很⼤，虽然使⽤⽅便了也很容易保证了数据的⼀致性，当时⻓期持有，不释放内存就造成了花费更多的内存 
+- 对于⼤型的图形应⽤程序，视图状态较多，ViewModel的构建和维护的成本都会⽐较⾼。
 
 # 二、Vue原理篇
 
@@ -376,6 +506,14 @@ let newFn = new Proxy(fn,{
 })
 console.log(newFn.a)
 ```
+
+## 7. 模板编译原理
+
+Vue中的模板template无法被浏览器解析并渲染，因为这不属于浏览器的标准，不是正确的HTML语法，所以需要将template转化成一个JavaScript函数，这样浏览器就可以执行这一个函数并渲染出对应的HTML元素，就可以让视图跑起来了，这一个转化过程，就称为 **模板编译**。模板编译又分为三个阶段，解析parse，优化optimize，生成generate，最终生成可执行函数render。
+
+- **解析阶段**：使用大量的正则表达式对template字符串进行解析，将标签、指令、属性等转化为抽象语法树AST。
+- **优化阶段**：遍历AST，找到其中的一些静态节点并进行标记，方便在页面重渲染的时候进行diff比较时，直接跳过这一些静态节点，优化runtime的性能。
+- **生成阶段**：将最终的AST转化为render函数字符串。
 
 
 
