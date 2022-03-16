@@ -545,6 +545,8 @@ Vue中的模板template无法被浏览器解析并渲染，因为这不属于浏
 
 ## 1. MVVM、MVC、MVP的区别
 
+> [阮一峰对这三个模式的解读](https://www.ruanyifeng.com/blog/2015/02/mvcmvp_mvvm.html)
+
 这三种都是常见的软件架构设计模式，主要通过分离关注点的方式来组织代码结构、优化开发效率。
 
 在开发单页面应用时，往往一个路由页面对应一个脚本文件，所有的页面逻辑都在一个脚本文件里。页面的渲染、数据的获取，对用户事件的响应所有的应用逻辑都混合在一起，这样在开发简单项目时，可能看不出什么问题，如果项目变得复杂，那么整个文件就会变得冗长、混乱，这样对项目开发和后期的项目维护是非常不利的。
@@ -567,7 +569,7 @@ Vue中的模板template无法被浏览器解析并渲染，因为这不属于浏
 - `View`代表UI视图，负责数据的展示；
 - `ViewModel`负责监听 `Model`中数据的改变并控制视图的更新，处理用户交互操作（业务逻辑层）
 
-Model和View并无直接关联，而是通过ViewModel来进行联系。**Model和ViewModel之间有着双向数据绑定的联系。因此当Model中的数据改变时会触发View层的刷新，View中由于用户交互操作而改变的数据也会在Model中同步**。
+Model和View并无直接关联，而是通过ViewModel来进行联系。**view和ViewModel之间有着双向数据绑定的联系。View的变动，自动反映在 ViewModel，反之亦然**。
 
 这种模式实现了Model和View的数据的同步更新，因此开发者只需要专注于数据的维护操作即可，而不需要自己操作DOM。
 
@@ -580,6 +582,8 @@ Model和View并无直接关联，而是通过ViewModel来进行联系。**Model�
 MVP和MVC唯一不同的在于 Presenter和Controller。在MVC中，View层和Model层会耦合在一起，当项目逻辑变得复杂时，可能会造成代码的混乱，并且可能会对代码的复用性造成一些问题。
 
 MVP通过使用Presenter来实现对View层和Model层的解耦。MVC中的Controller只知道Model的接口，因此它没有办法控制View层的更新，MVP中，VIew层的接口暴露给了Presenter，因此可以在Presenter中将Model的变化和View的变化绑定在一起以此来实现View和Model的同步更新。这样就实现了View和Model层的解耦，Presenter还包括了其他的响应逻辑。
+
+![img](https://gitee.com/guoluyan53/image-bed/raw/master/img/bg2015020109.png)
 
 ## 2. v-if 和 v-show的区别
 
@@ -614,11 +618,61 @@ MVP通过使用Presenter来实现对View层和Model层的解耦。MVC中的Contr
 
 ## 6. params 和 query的区别
 
+> [Vue Router 的params和query传参的使用和区别（详尽）](https://blog.csdn.net/mf_717714/article/details/81945218)
+
 **用法**：query要用path来引入，params要用name来引入，接收参数都是类似的，分别是 `this.$route.query.name` 和 `this.$route.param.name`
 
 **url地址显示**：query更加类似于ajax中get传参，params则类似于post，说的再简单一些，前者在浏览器地址栏中显示参数，后者则不显示。
 
 **注意**：query刷新不会丢失query里面的数据，params刷新会丢失params里面的数据。
+
+> `$router` : 是路由操作对象，只写对象 
+>
+> `$route` : 路由信息对象，只读对象
+
+```javascript
+//query传参，使用path跳转
+this.$router.push({
+    path:'second',
+    query: {
+        queryId:'20180822',
+        queryName: 'query'
+    }
+})
+
+//query传参接收
+this.queryName = this.$route.query.queryName;
+this.queryId = this.$route.query.queryId;
+
+//路由
+{
+path: '/second',
+name: 'second',
+component: () => import('@/view/second')
+}
+///////////////////////////////////////////
+//params传参 使用name
+this.$router.push({
+  name:'second',
+  params: {
+    id:'20180822',
+     name: 'query'
+  }
+})
+
+//params接收参数
+this.id = this.$route.params.id ;
+this.name = this.$route.params.name ;
+
+//路由
+{
+path: '/second/:id/:name',
+name: 'second',
+component: () => import('@/view/second')
+}
+```
+
+
 
 ## 7. Vuex 和localStorage 的区别
 
@@ -1271,7 +1325,7 @@ const router = new VueRouter({
 - pushState()设置的新url可以与当前url**一模一样**，这样也会把记录添加到栈中；而hash设置的新值必须和原来的不一样才会触发动作将记录添加到栈中。
 - pushState()通过stateObject参数可以**添加任意类型的数据**到记录中；而hash只可添加短字符串；
 - pushstate()可额外设置title属性供后续使用。
-- hash模式下，仅hash符号之前的url会被包含在请求中，后端如果没有做到对路由的全覆盖，也不会返回404错误；history模式下，前端的url必须和实际向后端发起请求的url一致，如果没有对用的路由处理，将返回404错误。
+- hash模式下，仅hash符号之前的url会被包含在请求中，后端如果没有做到对路由的全覆盖，也不会返回404错误；history模式下，前端的url必须和实际向后端发起请求的url一致，如果没有对应的路由处理，将返回404错误。
 
 > 无论使用哪种模式，本质都是使用的 `history.pushState`，每次pushState后，会在浏览器的浏览记录中添加一个新的记录，但是并 **不会触发页面刷新，也不会请求新的数据**。
 
@@ -1462,10 +1516,10 @@ vuex是一个专为vue.js应用程序开发的状态管理模式。，每一个V
 **（2）各模块在核心流程中的主要功能**：
 
 - `Vue Components`：Vue组件。HTML页面上，负责接收用户操作等交互行为，执行dispatch方法触发对应action进行回应。
-- `dispatch`：操作行为触发方法，是唯一能执行action的方法。
+- `dispatch`：操作行为触发方法，是唯一能执行action的方法。（调度、派遣、分配、触发）
 - `actions`：操作行为处理模块。负责处理Vue Components接收到的所有交互行为。包括 **同步/异步**操作，支持多个同名方法，按照注册的顺序依次触发。向后台API请求的操作就在这个模块中进行，包括触发其他action 以及 mutation 的操作。该模块提供了Promise的封装，以支持action 的链式触发。
 - `commit`：改变状态提交操作方法。对mutation进行提交，是唯一能执行mutation的方法。
-- `mutations`：状态改变操作方法。是Vuex修改state的唯一推荐方法，其他修改方式在严格模式下将会报错。该方法**只能进行同步操作**，且方法名只能全局唯一。操作之中会有一些hook暴露出来，以进行state的监控等。
+- `mutations`：状态改变操作方法。是Vuex修改state的唯一推荐方法，其他修改方式在严格模式下将会报错。该方法**只能进行同步操作**，且方法名只能全局唯一。操作之中会有一些hook暴露出来，以进行state的监控等。（突变）
 - `state`：页面状态管理容器对象。集中存储Vuecomponents中data对象的零散数据，全局唯一，以进行统一的状态管理。页面显示所需的数据从该对象中进行读取，利用Vue的细粒度数据响应机制来进行高效的状态更新。
 - `getters`：state对象读取方法。图中没有单独列出该模块，应该被包含在了render中，VueComponents 通过该方法读取全局state对象。（相当于计算属性）
 
@@ -1594,8 +1648,8 @@ Action 函数接受一个与store实例具有相同方法和属性的context对�
 
 ## 3. 为什么Vuex 的 mutation中不能做异步操作？
 
-- vuex中所有的状态更新的唯一途径都是mutation，异步操作通过Action 来提交mutation实现，这样可以方便地跟踪每一个状态的变化，从而能够实现一些工具帮助更好地了解我们的应用。
-- 每个mutation执行完成后都会对应到一个新的状态变更，这样devtools就可以打个快照存下来，然后就可以实现time-travel了。如果mutation支持异步操作，就没有办法知道状态是何时更新的，无法很好的进行状态的追踪，给调试带来困难。
+- vuex中所有的状态更新的唯一途径都是mutation，异步操作通过Action 来提交mutation实现，这样可以**方便地跟踪每一个状态的变化**，从而能够实现一些工具帮助更好地了解我们的应用。
+- 每个mutation执行完成后都会对应到一个新的状态变更，这样devtools就可以打个快照存下来，然后就可以实现time-travel了。**如果mutation支持异步操作，就没有办法知道状态是何时更新的，无法很好的进行状态的追踪，给调试带来困难**。（调试困难）
 
 
 
