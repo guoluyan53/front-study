@@ -2,6 +2,8 @@
 >
 > 关于HTML和HTML5的面试复习。
 
+![HTML面试题.png](https://gitee.com/guoluyan53/image-bed/raw/master/img/1621600195788-acab59b1-a654-4ec4-b9c2-0a491a660671.png)
+
 # 1、HTML5的新增特性
 
 - **语义化标签**：`header`、`nav`、`footer`、`section`、`aside`、`article`、`details`、`summary`、`dialog`（对话框）
