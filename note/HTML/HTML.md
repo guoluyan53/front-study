@@ -2,7 +2,7 @@
 >
 > 关于HTML和HTML5的面试复习。
 
-![HTML面试题.png](https://gitee.com/guoluyan53/image-bed/raw/master/img/1621600195788-acab59b1-a654-4ec4-b9c2-0a491a660671.png)
+![HTML面试题.png](https://s2.loli.net/2022/03/26/OZfALN4wx5a38Kj.png)
 
 # 1、HTML5的新增特性
 
@@ -107,7 +107,7 @@
 
 > 如果没有`defer`或`async`属性，浏览器会立即加载并执行相应的脚本。他不会等待后续加载的文档元素（就是即使这个文档元素没有加载完也要停下来），读取到就会开始加载和执行，这样就会阻塞后续文档的加载。defer是推迟的意思，async是异步的意思。
 
-![image.png](https://gitee.com/guoluyan53/image-bed/raw/master/img/1603547262709-5029c4e4-42f5-4fd4-bcbb-c0e0e3a40f5a.png)
+![image.png](https://s2.loli.net/2022/03/26/eAo5VMP2nygC6U4.png)
 
 <u>蓝色代表js脚本的加载时间；红色表示js脚本的执行时间；绿色表示HTML解析时间</u>
 

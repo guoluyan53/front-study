@@ -1,6 +1,6 @@
 [TOC]
 
-![Vue面试题.png](https://gitee.com/guoluyan53/image-bed/raw/master/img/1621612367141-93b24efc-8b06-4c10-8259-586cd8c6c5d5.png)
+![Vue面试题.png](https://s2.loli.net/2022/03/26/Uqxdv4nTpHBerW9.png)
 
 # 一、Vue基础
 
@@ -349,7 +349,7 @@ vue.js是采用 **数据劫持**结合 **发布者-订阅者模式**的方式，
 
 4. MVVM作为数据绑定的入口，整个Observer、Compile和 Watcher三者，通过 Observer来监听组件的model数据变化，通过Compile来解析编译模板指令，最终利用Watcher搭起Observer和Compile之间的通信桥梁，达到数据变化 -》视图更新；视图交互变化（input）-》数据model变更的双向绑定效果。
 
-![img](https://gitee.com/guoluyan53/image-bed/raw/master/img/1618656573096-ebdc520c-5d60-4d12-ad04-5df4ebbb5fe7.png)
+![img](https://s2.loli.net/2022/03/26/jQHGD4ZIMtgXeqU.png)
 
 ## 4. $nextTick原理及作用
 
@@ -559,7 +559,7 @@ Vue中的模板template无法被浏览器解析并渲染，因为这不属于浏
 
 <u>`Controller`层是 `View`和 `Model`层的纽带</u>，它**主要负责用户与应用的响应操作**，当用户与页面产生交互的时候，`Controller`中的事件触发器就开始工作了，通过调用 `Model`层，来完成对`Model`的修改，然后 `Model`层再去通知 `View`层更新。
 
-![image.png](https://gitee.com/guoluyan53/image-bed/raw/master/img/1603814137582-5a9aa62f-0045-4272-bef0-447dedb25596.png)
+![image.png](https://s2.loli.net/2022/03/26/o3VELaWRKkJXeIQ.png)
 
 ### MVVM（Vue使用）
 
@@ -583,7 +583,7 @@ MVP和MVC唯一不同的在于 Presenter和Controller。在MVC中，View层和Mo
 
 MVP通过使用Presenter来实现对View层和Model层的解耦。MVC中的Controller只知道Model的接口，因此它没有办法控制View层的更新，MVP中，VIew层的接口暴露给了Presenter，因此可以在Presenter中将Model的变化和View的变化绑定在一起以此来实现View和Model的同步更新。这样就实现了View和Model层的解耦，Presenter还包括了其他的响应逻辑。
 
-![img](https://gitee.com/guoluyan53/image-bed/raw/master/img/bg2015020109.png)
+![img](https://s2.loli.net/2022/03/26/Fjkmv8OtPqWeugy.png)
 
 ## 2. v-if 和 v-show的区别
 
@@ -697,7 +697,7 @@ component: () => import('@/view/second')
 
 # 四、Vue生命周期
 
-![无标题](https://gitee.com/guoluyan53/image-bed/raw/master/img/无标题.png)
+![无标题](https://s2.loli.net/2022/03/26/ASYtkwVzg54Pjqo.png)
 
 ## 1. 说一下Vue的生命周期
 

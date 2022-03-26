@@ -1,4 +1,4 @@
-![img](https://gitee.com/guoluyan53/image-bed/raw/master/img/1621500410361-1f8976b5-7b26-4803-b5c3-d0ec8cd819d8.png)
+![img](https://s2.loli.net/2022/03/26/HsfUQG63reM1DKO.png)
 
 [TOC]
 
@@ -103,7 +103,7 @@ console.log(a.call(undefined)); //[object undefined]
 console.log(a.call(null)); //[object null]
 ```
 
-![QQ图片20220313090757](https://gitee.com/guoluyan53/image-bed/raw/master/img/QQ图片20220313090757.png)
+![QQ图片20220313090757](https://s2.loli.net/2022/03/26/JRgolCEak9x65zZ.png)
 
 检测对象obj调用toString方法，obj.toString()的结果和Object.prototype.toString.call(obj)的结果不一样，这是为什么？
 
@@ -218,7 +218,7 @@ NaN是一个特殊值，它和自身不相等，是唯一一个非自反的值�
 5. 判断其中一方是否为 `Boolean`，是的话就会将 `Boolean`转换为 `number`再进行判断
 6. 判断其中一方是否为 `object`且另一方为 `string`、`number`或者 `symbol`，是的化就会把 `object`转为原始类型再判断
 
-![img](https://gitee.com/guoluyan53/image-bed/raw/master/img/1615475217180-eabe8060-a66a-425d-ad4c-37c3ca638a68.png)
+![img](https://s2.loli.net/2022/03/26/C3oHgtji8n1hxPY.png)
 
 ## 11、Object.is() 与比较操作符 “===” 、“==“ 的区别？
 
@@ -470,7 +470,7 @@ new c = ()=> console.log('ccc')
 c()
 ```
 
-![image-20220205154157632](https://gitee.com/guoluyan53/image-bed/raw/master/img/image-20220205154157632.png)
+![image-20220205154157632](https://s2.loli.net/2022/03/26/NZ7w6l4Qdz8eXhb.png)
 
 ## 4、箭头函数与普通函数的区别
 
@@ -799,7 +799,7 @@ for(var k of obj){
 }
 ```
 
-![image-20220310101056465](https://gitee.com/guoluyan53/image-bed/raw/master/img/image-20220310101056465.png)
+![image-20220310101056465](https://s2.loli.net/2022/03/26/GJihjENO28RUrIo.png)
 
 （2）如果不是类数组对象，就给对象添加一个[Symbol.iterator]属性，并指向一个迭代器即可。
 
@@ -1001,7 +1001,7 @@ console.log(arraylike);
 console.log(arr);
 ```
 
-![image-20220312095325029](https://gitee.com/guoluyan53/image-bed/raw/master/img/image-20220312095325029.png)
+![image-20220312095325029](https://s2.loli.net/2022/03/26/fYM2rUn6IszVc9k.png)
 
 **（2）通过call调用数组的splice方法**：会改变原数组
 
@@ -1176,7 +1176,7 @@ function flatten(arr){
 console.log(flatten(a));  //[1,2,3,4,5,6,7,8,9,10]
 ```
 
-![image-20220312160713214](https://gitee.com/guoluyan53/image-bed/raw/master/img/image-20220312160713214.png)
+![image-20220312160713214](https://s2.loli.net/2022/03/26/F6bkm3Mqz4GXRVW.png)
 
 **（6）ES6新增方法flat()**
 
@@ -1342,7 +1342,7 @@ console.log(p.__proto__ === p.constructor.prototype); //true
 
 **原型链就是多个对象通过 `__ proto __` 的方式连接了起来。**
 
-![image-20210927113643733](https://gitee.com/guoluyan53/image-bed/raw/master/img/a9Ny8O4d2MPYRsg.png)
+![image-20210927113643733](https://s2.loli.net/2022/03/26/XpI9iWtUmE7TV6u.png)
 
 ### 原型链指向
 
@@ -1528,7 +1528,7 @@ first();
 //先执行second(),在执行first()
 ```
 
-![image-20220223200253455](https://gitee.com/guoluyan53/image-bed/raw/master/img/image-20220223200253455.png)
+![image-20220223200253455](https://s2.loli.net/2022/03/26/xdkgOvqMFcmGQEs.png)
 
 ### 创建执行上下文
 
@@ -1612,7 +1612,7 @@ JS执行时会区别这2个队列
 - 当前宏任务执行完毕，开始检查渲染，然后GUI线程接管渲染
 - 渲染完毕后，JS线程继续接管，开始下一个宏任务（从事件队列中获取）
 
-![img](https://gitee.com/guoluyan53/image-bed/raw/master/img/v2-e6dd78c74cb671dd9408c2273308a265_1440w.jpg)
+![img](https://s2.loli.net/2022/03/26/YWH2Klvh8z46bRI.jpg)
 
 > 简单来说，事件循环大致分为以下几个步骤：
 
@@ -1737,7 +1737,7 @@ loader中使用 deepclone可以解决
 
 所谓防抖，就是指触发事件后，把触发非常频繁的事件合并成一次去执行。即在指定时间内只执行一次回调函数，如果在指定的时间内又触发了该事件，则回调函数的执行时间会基于此刻重新开始计算。
 
-![img](https://gitee.com/guoluyan53/image-bed/raw/master/img/v2-3da3bad98e09d349d3cc8e4d19bf313a_1440w.jpg)
+![img](https://s2.loli.net/2022/03/26/LNOKWUA4iMTtsjn.jpg)
 
 **简单来说就是，执行一次函数后（给下一次执行设定一个延迟时间），如果再次触发，那么不会响应，而这个时间重新计时，直到在这个时间内没有触发事件才可以执行下一次函数。**
 
@@ -1775,7 +1775,7 @@ button.addEventListener('click',debounce(inputhhh,1000));
 
 所谓节流，是指频繁触发事件时，只会在指定的时间段内执行事件回调，即触发事件间隔大于等于指定的时间才会执行回调函数。
 
-![img](https://gitee.com/guoluyan53/image-bed/raw/master/img/v2-93ac81a3f600ec1f655c61ad9f74a8b8_1440w.jpg)
+![img](https://s2.loli.net/2022/03/26/oVaIKmqtGjX7UxH.jpg)
 
 **简单来说，就是当事件被触发时执行，但是在指定时间内不管触发多少次都不会执行，当指定时间结束，触发才会被执行。**
 
@@ -1861,7 +1861,7 @@ fn.apply(obj,[1,2]); // this会变成传入的obj，传入的参数必须是一�
 fn(1,2) // this指向window
 ```
 
-![image-20220225111723748](https://gitee.com/guoluyan53/image-bed/raw/master/img/image-20220225111723748.png)
+![image-20220225111723748](https://s2.loli.net/2022/03/26/n1UsA2SOLG4qdmx.png)
 
 > 当第一个参数为 null、undefined的时候，默认指向window（在浏览器中）
 
@@ -1883,7 +1883,7 @@ fn.call(obj,1,2); // this会变成传入的obj，传入的参数是一个列表�
 fn(1,2) // this指向window
 ```
 
-![image-20220225112120130](https://gitee.com/guoluyan53/image-bed/raw/master/img/image-20220225112120130.png)
+![image-20220225112120130](https://s2.loli.net/2022/03/26/dHfUcxb8B75pusQ.png)
 
 > 当第一个参数为 null、undefined的时候，默认指向window（在浏览器中）
 

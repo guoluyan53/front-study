@@ -26,30 +26,3 @@ Node打破了过去JavaScript只能在浏览器中运行的局面。前后端编
 
 ## nodejs的结构
 
-![这里写图片描述](https://gitee.com/guoluyan53/image-bed/raw/master/img/20160621205639325)
-
-**Nodejs结构大体分为三个部分**：
-
-（1）`Node.js标准库`：这部分由JavaScript编写。也就是平时我们经常require的各个模块，如：http，fs，express，Request......这部分在源码的lib目录下可以看到
-
-（2）`Node bindings`：node.js程序的main函数入口，还有提供给lib模块的c++类接口，这一层是JavaScript与底层C/C++沟通的桥梁，由C++编写，这部分在源码的src目录下可以可以看到。
-
-（3）最底层，支持NodeJS运行的关键：
-
-- V8引擎：用来解析、执行JavaScript代码的运行环境。
-- libuv：提供最底层的IO操作接口，包括 **文件异步IO的线程池管理和网络的IO操作，是整个异步IO实现的核心**，这部分由c/c++编写，在源码的deps目录下可以看到。
-
-
-
-
-
-# 二、NodeJS的特点
-
-1. 它是一个JavaScript的运行环境
-2. 依赖于Chrome V8引擎进行代码解释
-3. 异步事件驱动
-4. 非阻塞I/O
-5. 轻量、可伸缩，适于实时数据交互应用
-6. 单进程，单线程（这里指主线程）
-7. 性能出众
-

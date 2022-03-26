@@ -37,7 +37,7 @@
 
 > css有两种盒模型：标准盒模型和IE盒子模型
 
-![img](https://gitee.com/guoluyan53/image-bed/raw/master/img/1603600820746-e10daafa-451a-454e-9705-f8c358769d5b.png)
+![img](https://s2.loli.net/2022/03/26/aHwY96hukVyWSe4.png)
 
 ![img](https://gitee.com/guoluyan53/image-bed/raw/master/img/1603600820555-dc6ed390-d47e-412b-942a-857bbe5f280d.png)
 
@@ -278,7 +278,7 @@ p:first-child{color:red;}
 </body>
 ```
 
-![image-20220125172917586](https://gitee.com/guoluyan53/image-bed/raw/master/img/image-20220125172917586.png)
+![image-20220125172917586](https://s2.loli.net/2022/03/26/HDbcjPJKwgImeRy.png)
 
 **解决方法**：
 
@@ -504,7 +504,7 @@ Webpack 能处理 CSS 吗：
 - `imgs.offsetTop` 是元素顶部距离文档顶部的高度（包括滚动条的距离）；
 - 内容达到显示区域的：`img.offsetTop < window.innerHeight + document.body.scrollTop;`
 
-![img](https://gitee.com/guoluyan53/image-bed/raw/master/img/1603966605254-fe880ec0-ebd1-4f94-b662-cdd5e5396c34.png)
+![img](https://s2.loli.net/2022/03/26/lEjBZnsXokpI31g.png)
 
 # 四、页面布局
 
@@ -1304,7 +1304,7 @@ clear属性只有块级元素才有效的，而 `::after`等伪元素默认都�
 
 层叠顺序，英文称作 stacking order，表示元素发生层叠时有着特定的垂直显示顺序。下面是盒模型的层叠规则：
 
-![image](https://gitee.com/guoluyan53/image-bed/raw/master/img/125327116-5a43be80-e375-11eb-8077-e75e07d63cf9.png)
+![image](https://s2.loli.net/2022/03/26/rZzTHov9cuaqMFD.png)
 
 **注意:** 当定位元素z-index:auto，生成盒在当前层叠上下文中的层级为 0，不会建立新的层叠上下文，除非是根元素。
 
@@ -1376,7 +1376,7 @@ div {
 }
 ```
 
-![img](https://gitee.com/guoluyan53/image-bed/raw/master/img/1603636245172-36f955bd-075b-442a-b88b-6c084c66ed25.png)
+![img](https://s2.loli.net/2022/03/26/eCuaYjBVzP3S7t6.png)
 
 ## 2、实现一个扇形
 
@@ -1390,7 +1390,7 @@ div{
 }
 ```
 
-![img](https://gitee.com/guoluyan53/image-bed/raw/master/img/1603636444767-26da7bbe-5479-44e2-9088-50c9211d6c0d.png)
+![img](https://s2.loli.net/2022/03/26/9eQEb1P76Fou5HZ.png)
 
 ## 3、画一条0.5px的线
 
@@ -1420,7 +1420,7 @@ transform:scale(0.5,0.5);
  }
  ```
 
-![image.png](https://gitee.com/guoluyan53/image-bed/raw/master/img/1630773825580-c1821c13-4513-4462-9a13-73ad4a3ef6e6.png)
+![image.png](https://s2.loli.net/2022/03/26/A4vcb7DRqjkIiJg.png)
 
 ## 5、画一个半圆
 
@@ -1435,5 +1435,5 @@ div {
 
 
 
-![image-20220130173147172](https://gitee.com/guoluyan53/image-bed/raw/master/img/image-20220130173147172.png)
+![image-20220130173147172](https://s2.loli.net/2022/03/26/L4xpR26HctXiKBT.png)
 
