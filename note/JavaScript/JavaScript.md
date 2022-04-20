@@ -36,12 +36,12 @@
 ```javascript
 console.log(typeof 3);   //number
 console.log(typeof []);  //object
-console.log(typeof function(){});  //object
+console.log(typeof function(){});  //function
 console.log(typeof null);    //object
 console.log(typeof 'str');    //string
 ```
 
-其中数组、对象、null都会被判断为object，其他判断都正确。
+其中数组、对象、null都会被判断为object，其他判断都正确。函数类型会被判断为function
 
 **2、instanceof**
 
