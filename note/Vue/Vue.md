@@ -559,7 +559,7 @@ Vue中的模板template无法被浏览器解析并渲染，因为这不属于浏
 
 <u>`Controller`层是 `View`和 `Model`层的纽带</u>，它**主要负责用户与应用的响应操作**，当用户与页面产生交互的时候，`Controller`中的事件触发器就开始工作了，通过调用 `Model`层，来完成对`Model`的修改，然后 `Model`层再去通知 `View`层更新。
 
-![image.png](https://s2.loli.net/2022/03/26/o3VELaWRKkJXeIQ.png)
+![img](https://upload-images.jianshu.io/upload_images/15226743-7b9ec190c760b7a8.png?imageMogr2/auto-orient/strip|imageView2/2/w/601/format/webp)
 
 ### MVVM（Vue使用）
 
