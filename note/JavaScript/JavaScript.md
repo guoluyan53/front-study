@@ -1259,7 +1259,7 @@ fetch('http://aaa.com/text.json')
 
 Axios 是一种基于Promise封装的HTTP客户端，其特点如下：
 
-- 浏览器端发起XMLHttpRequests请求
+- **浏览器端发起XMLHttpRequests请求**
 - node端发起http请求
 - 支持Promise API
 - 监听请求和返回

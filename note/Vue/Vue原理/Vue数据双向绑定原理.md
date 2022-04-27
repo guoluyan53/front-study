@@ -44,7 +44,7 @@
 **谈谈你对vue的 MVVM响应式原理的理解**。
 
 - Vue是采用数据劫持结合发布者-订阅者模式的方式，通过Object.defineProperty()来劫持各个属性的getter、setter，在数据变动时发布消息给订阅者，然后触发相应的监听回调函数来更新视图。
-- 首先需要Observer 对数据进行递归遍历，包括子属性对象的属性，都添加上getter、setter，当读取值或者修改数据时，就会触发getter或setter，就能监听到数据变化。
+- 首先需要Observer 对数据进行递归遍历，包括子属性对象的属性，都添加上getter、setter，当读取值或者修改数据时，就会触发getter或setter，就能**监听**到数据变化。
 - compile 解析指令，初始化页面将模板中的变量替换成数据，并将每个指令对应的结点 绑定更新的回调函数，添加订阅者，一旦数据变动，订阅者收到通知，触发回调更新视图。
 - watcher订阅者是compile 和 observer之间的桥梁，首先在自身实例化时往dep中添加自己，其次，要有一个update方法更新，最后，数据变动时触发 dep.notice()，调用自身的update方法，触发compile 中绑定的回调函数。
 - MVVM 作为数据绑定的入口，整合Observer、compile、watcher三者，通过observer来监听自己的model数据变化，通过compile来解析指令，最终利用watcher搭起Observer和compile之间的通信桥梁，达到 <u>数据变化----视图更新；视图交互变化（input）-----数据model更新的双向绑定效果。</u>
