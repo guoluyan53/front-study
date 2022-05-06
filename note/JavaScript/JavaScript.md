@@ -723,7 +723,7 @@ var finalString = `my name is ${name}, I work as a ${career} I love ${hobby[0]} 
 
 在过去，当判断一个字符/字符串是否在某字符串中时，只能用indexOf > -1 来做。现在ES6提供了三个方法：`includes`、`startWith`、`endsWith`，他们都会返回一个布尔值来告诉你是否存在。
 
-**（1）ncludes**：判断字符串与子串的包含关系：
+**（1）includes**：判断字符串与子串的包含关系：
 
 ```javascript
 const son = 'haha' 
@@ -731,7 +731,7 @@ const father = 'xixi haha hehe'
 father.includes(son) // true
 ```
 
-**（2）startWith：**判断字符串是否以某个/某串字符开头：
+**（2）startWith**：判断字符串是否以某个/某串字符开头：
 
 ```javascript
 const father = 'xixi haha hehe'
