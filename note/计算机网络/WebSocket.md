@@ -8,7 +8,7 @@ WebSocked是HTML5提供的一种浏览器与服务器进行**全双工通讯**�
 
 WebSocket的出现就解决了半双工通信的弊端。它最大的特点是：**服务器可以向客户端主动推动消息，客户端也可以主动向服务器推送消息**。
 
-![img](https://ask.qcloudimg.com/http-save/1037212/ccc22f4eea2be82335a9c646f72fe61e.png?imageView2/2/w/1620)
+![img](https://s2.loli.net/2022/05/14/AgdjN4nfoklI3Rr.png)
 
 > 上图可知WebSocket在进行通信之前都会进行一次握手，之后就可以创建持久性连接了。
 
