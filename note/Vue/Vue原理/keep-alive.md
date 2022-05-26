@@ -4,13 +4,17 @@
 
 ## 1、对keep-alive的理解
 
+**keep-alive是Vue内置的一个组件，可以使被包含的组件保留状态，或避免重新渲染**
+
+**router-view 也是一个组件，如果直接被包在keep-alive里面，所有路径匹配到的视图组件都会被缓存**。
+
 keep-alive有以下三个属性：
 
-- include字符串或正则表达式，只有名称匹配的组件会被匹配；
-- exclude字符串或正则表达式，任何名称匹配的组件都不会被缓存。
-- max数字，最多可以缓存多少组件实例。
+- `include`：字符串或正则表达式，只有名称匹配的组件会被匹配；（有多个匹配的时候使用逗号分开，不要加空格）
+- `exclude`：字符串或正则表达式，任何名称匹配的组件都不会被缓存。
+- `max`：数字，最多可以缓存多少组件实例。
 
-> 注意：keep-alive包裹动态组件时，会缓存不活动的组件实例。
+> 注意：keep-alive包裹动态组件时，会缓存不活动的组件实例。也就是 `activated()` 和 `deactivated()`
 
 **主要流程**：
 
@@ -215,3 +219,25 @@ LRU（Least rencently used）算法根据数据的历史访问记录来进行淘
 - 新数据插入到链表头部
 - 每当缓存命中（即缓存数据被访问），则将数据移到链表头部
 - 链表满的时候，将链表尾部的数据丢弃。
+
+## 3. keep-alive的使用
+
+```vue
+<template>
+	...
+	<keep-alive exclude="User,hhh">
+    	<router-view></router-view>
+    </keep-alive>
+    ...
+</template>
+```
+
+```vue
+export{
+	...
+	activated(){} 
+	deactivated(){}
+}
+```
+
+- `activated()` 和 `deactivated()`这两个函数只有该组件被保持了状态使用了keep-alive时，才是有效的。
